@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="auto">
+    <title>Real-Time RFID Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #rfid-tag {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .container {
+            display: inline-block;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="form.html">Form</a>
+        <a href="dashboard.html">Dashboard</a>
+    </div>
+
+    <div class="container">
+        <h1>Scanned RFID Tag</h1>
+        <p id="rfid-tag">Waiting for RFID...</p>
+    </div>
+
+    <script>
+        // Function to fetch the latest RFID tag from the PHP server and update the display
+        function fetchRFID() {
+            fetch('rfid-display.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received data from server:", data); // Debugging the received data
+                    document.getElementById('rfid-tag').textContent = data.rfid_tag;  // Update the displayed RFID tag
+                })
+                .catch(error => {
+                    console.error('Error fetching RFID data:', error);
+                    document.getElementById('rfid-tag').textContent = "Error loading data.";
+                });
+        }
+
+        // Fetch RFID data every second (1000 ms)
+        setInterval(fetchRFID, 1000);
+
+        // Initial fetch when the page loads
+        fetchRFID();
+    </script>
+</body>
+</html>
