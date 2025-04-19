@@ -4,46 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="auto">
     <title>Real-Time RFID Display</title>
+
+    <!-- Font Awesome for black & white icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
         }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 220px;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+            letter-spacing: 1px;
+        }
+        .logo-img {
+            width: 140px;
+            height: auto;
+            display: block;
+            margin: -12px auto;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 14px 20px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.3s;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover {
+            background-color: #333;
+        }
+
+        .sidebar i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            padding: 30px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            background-color: #fff;
+            text-align: center;
+        }
+
         #rfid-tag {
             font-size: 24px;
             font-weight: bold;
-            color: #333;
-        }
-        .container {
-            display: inline-block;
-            padding: 20px;
-            border: 2px solid #000;
-            border-radius: 10px;
-            background-color: #f4f4f4;
+            color: #000;
         }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <a href="form.html">Form</a>
-        <a href="dashboard.html">Dashboard</a>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="LibraTek Logo" class="logo-img">
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i>Home</a>
+        <a href="form.html"><i class="fas fa-pen"></i>Form</a>
+        <a href="dashboard.html"><i class="fas fa-chart-bar"></i>Dashboard</a>
+        <a href="notification.html"><i class="fas fa-bell"></i>Notifications</a>
+        <a href="logs.html"><i class="fas fa-file-alt"></i>Logs</a>
     </div>
 
-    <div class="container">
-        <h1>Scanned RFID Tag</h1>
-        <p id="rfid-tag">Waiting for RFID...</p>
+    <div class="main">
+        <div class="container">
+            <h1>Scanned RFID Tag</h1>
+            <p id="rfid-tag">Waiting for RFID...</p>
+        </div>
     </div>
 
     <script>
-        // Function to fetch the latest RFID tag from the PHP server and update the display
         function fetchRFID() {
             fetch('rfid-display.php')
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Received data from server:", data); // Debugging the received data
-                    document.getElementById('rfid-tag').textContent = data.rfid_tag;  // Update the displayed RFID tag
+                    console.log("Received data from server:", data);
+                    document.getElementById('rfid-tag').textContent = data.rfid_tag;
                 })
                 .catch(error => {
                     console.error('Error fetching RFID data:', error);
@@ -51,10 +119,7 @@
                 });
         }
 
-        // Fetch RFID data every second (1000 ms)
         setInterval(fetchRFID, 1000);
-
-        // Initial fetch when the page loads
         fetchRFID();
     </script>
 </body>

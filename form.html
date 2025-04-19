@@ -4,40 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add a Book</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #2c3e50;
             margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
+            background-color: #ecf0f1;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 220px;
+            background-color: #000;
+            display: flex;
             flex-direction: column;
         }
 
-        /* Navigation Bar */
-        .navbar {
-            width: 100%;
-            background-color: #34495e;
-            padding: 10px 20px;
-            box-sizing: border-box;
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .logo-img {
+            width: 140px;
+            height: auto;
+            display: block;
+            margin: -12px auto;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.3s;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover {
+            background-color: #333;
+        }
+
+        .sidebar i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
             display: flex;
             justify-content: center;
-        }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 18px;
-        }
-
-        .navbar a:hover {
-            background-color: #f39c12;
-            padding: 5px 10px;
-            border-radius: 5px;
+            align-items: center;
+            background-color: #2c3e50;
         }
 
         .container {
@@ -54,18 +81,18 @@
             text-align: center;
         }
 
-        input, button {
+        input, select, button {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
             font-size: 16px;
+            border: none;
         }
 
         button {
             background-color: #f39c12;
             color: white;
-            border: none;
             cursor: pointer;
         }
 
@@ -83,57 +110,63 @@
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html">Dashboard</a>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="LibraTek Logo" class="logo-img">
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i>Home</a>
+        <a href="form.html"><i class="fas fa-pen"></i>Form</a>
+        <a href="dashboard.html"><i class="fas fa-chart-bar"></i>Dashboard</a>
+        <a href="notification.html"><i class="fas fa-bell"></i>Notifications</a>
+        <a href="logs.html"><i class="fas fa-file-alt"></i>Logs</a>
     </div>
 
-    <div class="container">
-        <h1>Add a Book</h1>
-        <form action="form.html" method="POST">
-            <label for="title">Book Title:</label>
-            <input type="text" id="title" name="title" placeholder="Enter book title" required>
-            <br>
-        
-            <label for="year">Year:</label>
-            <input type="number" id="year" name="year" placeholder="Enter year" required>
-            <br>
-        
-            <label for="tags">Tags (comma-separated):</label>
-            <input type="text" id="tags" name="tags" placeholder="e.g. fiction, adventure">
-            <br>
-        
-            <label for="status">Status:</label>
-            <select id="status" name="status">
-                <option value="available">Available</option>
-                <option value="checked out">Checked Out</option>
-                <option value="archived">Archived</option>
-            </select>
-            <br>
-        
-            <button type="submit">Add Book</button>
-        </form>
-        
-        <div class="message" id="responseMessage"></div>
+    <!-- Main Content -->
+    <div class="main">
+        <div class="container">
+            <h1>Add a Book</h1>
+            <form action="form.html" method="POST">
+                <label for="title">Book Title:</label>
+                <input type="text" id="title" name="title" placeholder="Enter book title" required>
+
+                <label for="year">Year:</label>
+                <input type="number" id="year" name="year" placeholder="Enter year" required>
+
+                <label for="tags">Tags (comma-separated):</label>
+                <input type="text" id="tags" name="tags" placeholder="e.g. fiction, adventure">
+
+                <label for="status">Status:</label>
+                <select id="status" name="status">
+                    <option value="available">Available</option>
+                    <option value="checked out">Checked Out</option>
+                    <option value="archived">Archived</option>
+                </select>
+
+                <button type="submit">Add Book</button>
+            </form>
+
+            <div class="message" id="responseMessage"></div>
+        </div>
     </div>
 
     <script>
-        // Handle form submission
+        // Do NOT change your backend, so we match your form setup
         document.getElementById('addBookForm').addEventListener('submit', function(event) {
-            event.preventDefault();  // Prevent the form from refreshing the page
+            event.preventDefault();
 
-            // Get the book details from the form
-            const bookTitle = document.getElementById('bookTitle').value;
-            const bookYear = document.getElementById('bookYear').value;
+            const title = document.getElementById('title').value;
+            const year = document.getElementById('year').value;
+            const tags = document.getElementById('tags').value;
+            const status = document.getElementById('status').value;
 
-            // Prepare the data to be sent to the backend
             const data = {
-                title: bookTitle,
-                year: bookYear
+                title: title,
+                year: year,
+                tags: tags,
+                status: status
             };
 
-            // Send the data to the backend (PHP)
             fetch('add_book.php', {
                 method: 'POST',
                 headers: {
@@ -145,7 +178,7 @@
             .then(data => {
                 const messageElement = document.getElementById('responseMessage');
                 messageElement.textContent = data.message;
-                messageElement.style.color = data.status === "success" ? "green" : "red";
+                messageElement.style.color = data.status === "success" ? "lightgreen" : "red";
             })
             .catch(error => {
                 console.error('Error:', error);

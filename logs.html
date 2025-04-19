@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Activity Logs</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2c3e50;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      height: 100vh;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: width 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .sidebar.closed {
+      width: 60px;
+    }
+
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      padding: 18px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s ease;
+      margin-top: 12px;
+      margin-bottom: -20px;
+    }
+
+    .sidebar-toggle:hover {
+      background-color: #1a1a1a;
+    }
+
+    .sidebar.closed .sidebar-toggle {
+      margin-bottom: 0px;
+    }
+
+    .logo {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+
+    .sidebar.closed .logo {
+      display: none;
+    }
+
+    .logo-img {
+      width: 140px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      margin-top: -60px;
+      padding-left: 8px;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      transition: background 0.3s;
+      white-space: nowrap;
+    }
+
+    .sidebar a:hover {
+      background-color: #f39c12;
+      border-radius: 0 10px 10px 0;
+    }
+
+    .sidebar.closed a span {
+      display: none;
+    }
+
+    .sidebar i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .logout {
+      padding: 14px 20px;
+      color: #fff;
+      text-decoration: none;
+      border-top: 1px solid #444;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+    }
+
+    .logout:hover {
+      background-color: #f39c12;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+      width: 100%;
+      background-color: #2c3e50;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.closed ~ .main-content {
+      margin-left: 60px;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 25px;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: -8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: #34495e;
+      color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    th, td {
+      padding: 16px 18px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f39c12;
+      color: #fff;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #3a5670;
+    }
+
+    tbody tr:hover {
+      background-color: #465f7b;
+      transition: 0.2s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div>
+      <!-- Toggle Button -->
+      <button class="sidebar-toggle" id="toggleSidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Logo -->
+      <div class="logo">
+        <img src="logo.png" alt="LibraTek Logo" class="logo-img">
+      </div>
+
+      <!-- Nav Links -->
+      <a href="index.html"><i class="fas fa-home"></i><span>Home</span></a>
+      <a href="form.html"><i class="fas fa-pen"></i><span>Form</span></a>
+      <a href="dashboard.html"><i class="fas fa-chart-bar"></i><span>Dashboard</span></a>
+      <a href="notification.html"><i class="fas fa-bell"></i><span>Notifications</span></a>
+      <a href="logs.html"><i class="fas fa-file-alt"></i><span>Logs</span></a>
+    </div>
+    <a href="logout.php" class="logout"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1><i class="fas fa-file-alt"></i> System Logs</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2025-04-18 10:23 AM</td><td>Admin</td><td>Added Book</td><td>Title: "AI for Libraries", Tags: tech, ai</td></tr>
+        <tr><td>2025-04-18 09:45 AM</td><td>System</td><td>RFID Alert</td><td>Unauthorized tag detected at Exit 1</td></tr>
+        <tr><td>2025-04-17 05:10 PM</td><td>John Doe</td><td>Login</td><td>Successful login</td></tr>
+        <tr><td>2025-04-17 04:55 PM</td><td>System</td><td>RFID Scan</td><td>Book ID 123456 matched</td></tr>
+        <tr><td>2025-04-17 04:30 PM</td><td>Admin</td><td>Updated Book</td><td>Title: "Introduction to RFID", Tags updated</td></tr>
+        <tr><td>2025-04-17 03:20 PM</td><td>System</td><td>Logout</td><td>User John Doe logged out</td></tr>
+        <tr><td>2025-04-17 02:15 PM</td><td>System</td><td>RFID Scan</td><td>Scanned Book ID: 789012</td></tr>
+        <tr><td>2025-04-17 01:58 PM</td><td>Admin</td><td>Deleted Book</td><td>Title: "Obsolete Records"</td></tr>
+        <tr><td>2025-04-17 01:22 PM</td><td>Jane Smith</td><td>Login</td><td>Successful login</td></tr>
+        <tr><td>2025-04-17 12:55 PM</td><td>System</td><td>RFID Alert</td><td>Reader 2 triggered with unknown tag</td></tr>
+        <tr><td>2025-04-17 12:30 PM</td><td>Admin</td><td>System Settings</td><td>Changed RFID scan interval to 1000ms</td></tr>
+        <tr><td>2025-04-17 11:50 AM</td><td>System</td><td>Scan Complete</td><td>Book tags processed successfully</td></tr>
+        <tr><td>2025-04-17 11:12 AM</td><td>Library Staff</td><td>Checked Out</td><td>Book: "Modern Networking"</td></tr>
+        <tr><td>2025-04-17 10:45 AM</td><td>System</td><td>Login Failed</td><td>Invalid credentials used by guest</td></tr>
+        <tr><td>2025-04-17 10:10 AM</td><td>Admin</td><td>Added Book</td><td>Title: "Cybersecurity 101", Tags: tech, security</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('closed');
+    });
+  </script>
+
+</body>
+</html>
