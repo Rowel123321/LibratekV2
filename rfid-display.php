@@ -1,33 +1,45 @@
 <?php
-$reader1File = 'reader_1_log.txt';
-$reader2File = 'reader_2_log.txt';
+require_once 'db.php'; // Make sure this defines $pdo
+
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    try {
+        $stmt = $pdo->query("SELECT * FROM reader_book_status");
+        $books = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($books);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $jsonData = file_get_contents('php://input');
     $data = json_decode($jsonData, true);
 
-    if (isset($data['rfid_tag']) && isset($data['reader_id'])) {
-        $tag = trim($data['rfid_tag']) . "\n";
-
-        if ($data['reader_id'] === 'reader_1') {
-            file_put_contents($reader1File, $tag);
-        } elseif ($data['reader_id'] === 'reader_2') {
-            file_put_contents($reader2File, $tag);
-        }
-
-        echo json_encode(["status" => "success", "message" => "RFID tag saved"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Missing RFID tag or reader ID"]);
+    if (!isset($data['reader_id'])) {
+        echo json_encode(["status" => "error", "message" => "Missing reader_id"]);
+        exit;
     }
-}
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $reader1Tag = file_exists($reader1File) ? trim(file_get_contents($reader1File)) : "";
-    $reader2Tag = file_exists($reader2File) ? trim(file_get_contents($reader2File)) : "";
+    $readerId = trim($data['reader_id']);
 
-    echo json_encode([
-        "reader_1" => $reader1Tag,
-        "reader_2" => $reader2Tag
-    ]);
+    if (isset($data['state']) && $data['state'] === 'removed') {
+        // ✅ Only clear scanned_tag — keep last_scanned_at
+        $stmt = $pdo->prepare("UPDATE reader_book_status SET scanned_tag = '' WHERE reader_id = ?");
+        $stmt->execute([$readerId]);
+        echo json_encode(["status" => "success", "message" => "scanned_tag cleared for reader_id $readerId"]);
+    } elseif (isset($data['rfid_tag'])) {
+        $scannedTag = trim($data['rfid_tag']);
+
+        // ✅ Set scanned_tag and update timestamp
+        $stmt = $pdo->prepare("UPDATE reader_book_status SET scanned_tag = ?, last_scanned_at = NOW() WHERE reader_id = ?");
+        $stmt->execute([$scannedTag, $readerId]);
+
+        echo json_encode(["status" => "success", "message" => "scanned_tag set and timestamp updated for reader_id $readerId"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Missing RFID tag or invalid state"]);
+    }
 }
 ?>
