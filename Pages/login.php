@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id'])) {
+  header("Location: dashboard.php");
+  exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +15,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Days+One&family=Great+Vibes&display=swap" rel="stylesheet">
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html { height: 100%; font-family: 'Arial', sans-serif; }
@@ -27,72 +34,55 @@
       align-items: center;
       text-align: center;
       padding: 2rem;
-      transition: all 0.5s ease-in-out;
-      position: relative;
       overflow: hidden;
     }
 
     .slide-container {
       position: relative;
       height: 140px;
+      width: 100%;
     }
 
     .slide-item {
       position: absolute;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      animation-duration: 0.6s;
-      animation-fill-mode: both;
       width: 100%;
+      transition: all 0.4s ease;
+      opacity: 0;
     }
 
     .slide-in {
-      animation-name: slideInUp;
-      opacity: 1;
+      animation: slideInUp 0.6s ease forwards;
     }
 
     .slide-out {
-      animation-name: slideOutUp;
+      animation: slideOutUp 0.6s ease forwards;
     }
 
     @keyframes slideInUp {
-      from {
-        transform: translateY(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0%);
-        opacity: 1;
-      }
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     @keyframes slideOutUp {
-      from {
-        transform: translateY(0%);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-100%); opacity: 0; }
     }
 
-    .headline h1 {
-      font-size: 2.5rem;
+    h1 {
       font-family: 'Days One', sans-serif;
+      font-size: 2.5rem;
+      line-height: 1.3;
     }
 
-    .headline .great {
+    .great {
       font-family: 'Great Vibes', cursive;
       font-size: 4.2rem;
     }
 
     .left-panel hr {
+      margin: 1rem auto;
       width: 80px;
       border: 1px solid white;
-      margin: 1rem auto;
     }
 
     .left-panel p {
@@ -113,7 +103,6 @@
     .form-box {
       width: 100%;
       max-width: 360px;
-      background: transparent;
     }
 
     .form-box img {
@@ -197,71 +186,13 @@
       color: white;
       text-decoration: underline;
     }
-    .slide-container {
-      position: relative;
-      height: 140px;
-      width: 100%;
-    }
-
-    .slide-item {
-      position: absolute;
-      width: 100%;
-      transition: all 0.4s ease;
-      opacity: 0;
-    }
-
-    .slide-in {
-      animation: slideInUp 0.6s ease forwards;
-    }
-
-    .slide-out {
-      animation: slideOutUp 0.6s ease forwards;
-    }
-
-    @keyframes slideInUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    @keyframes slideOutUp {
-      from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(-100%); opacity: 0; }
-    }
-
-    h1 {
-      font-family: 'Days One', sans-serif;
-      font-size: 2.5rem;
-      line-height: 1.3;
-    }
-
-    .great {
-      font-family: 'Great Vibes', cursive;
-      font-size: 4.2rem;
-    }
-
-    hr {
-      margin: 1rem auto;
-      width: 80px;
-      border: 1px solid white;
-    }
-
-    p {
-      max-width: 600px;
-      font-size: 1.1rem;
-      margin-top: 0.5rem;
-    }
-
-    .logo-img {
-      max-width: 200px;
-      margin: 0 auto;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="left-panel">
       <div class="slide-container">
-        <div class="slide-item headline slide-in" id="headline">
+        <div class="slide-item slide-in" id="headline">
           <h1>
             EMPOWERING <span class="great">L</span>EARNING,<br />
             SECURING KNOWLEDGE
@@ -283,7 +214,7 @@
         <h2>Log in to your account</h2>
         <p class="description">Enter your email and password below to log in</p>
 
-        <form>
+        <form id="loginForm">
           <div class="form-group">
             <label for="email">Email address</label>
             <input type="email" id="email" name="email" placeholder="email@example.com" required>
@@ -302,7 +233,7 @@
           <button type="submit">Log in</button>
 
           <div class="signup">
-            Don't have an account? <a href="register.html">Sign up</a>
+            Don't have an account? <a href="register.php">Sign up</a>
           </div>
         </form>
       </div>
@@ -319,7 +250,6 @@
       if (showingHeadline) {
         headline.classList.remove("slide-in");
         headline.classList.add("slide-out");
-
         setTimeout(() => {
           headline.style.opacity = 0;
           logo.classList.remove("slide-out");
@@ -329,7 +259,6 @@
       } else {
         logo.classList.remove("slide-in");
         logo.classList.add("slide-out");
-
         setTimeout(() => {
           logo.style.opacity = 0;
           headline.classList.remove("slide-out");
@@ -339,6 +268,31 @@
       }
       showingHeadline = !showingHeadline;
     }, 3000);
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      fetch('../Controllers/UserController.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            alert('Login successful!');
+            window.location.href = 'dashboard.php'; // Replace with your actual redirect
+          } else {
+            alert(data.message || 'Invalid credentials.');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Login error. Please try again.');
+        });
+    });
   </script>
 </body>
 </html>

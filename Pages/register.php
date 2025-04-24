@@ -8,21 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Days+One&family=Great+Vibes&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; font-family: 'Arial', sans-serif; }
 
-    body, html {
-      height: 100%;
-      font-family: 'Arial', sans-serif;
-    }
-
-    .container {
-      display: flex;
-      height: 100vh;
-    }
+    .container { display: flex; height: 100vh; }
 
     .left-section {
       flex: 1;
@@ -196,7 +185,7 @@
         <img src="../Images/logo.png" alt="Libratek Logo">
         <h2>Create an account</h2>
         <p>Enter your details below to create your account</p>
-        <form>
+        <form id="registerForm">
           <label for="name">Name</label>
           <input type="text" id="name" name="name" placeholder="Full name" required>
 
@@ -212,23 +201,22 @@
           <button type="submit">Create account</button>
         </form>
         <div class="form-footer">
-          Already have an account? <a href="login.html">Log in</a>
+          Already have an account? <a href="login.php">Log in</a>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    // Logo/text swap animation
     const headline = document.getElementById("headline");
     const logo = document.getElementById("logo");
-
     let showingHeadline = true;
 
     setInterval(() => {
       if (showingHeadline) {
         headline.classList.remove("slide-in");
         headline.classList.add("slide-out");
-
         setTimeout(() => {
           headline.style.opacity = 0;
           logo.classList.remove("slide-out");
@@ -238,7 +226,6 @@
       } else {
         logo.classList.remove("slide-in");
         logo.classList.add("slide-out");
-
         setTimeout(() => {
           logo.style.opacity = 0;
           headline.classList.remove("slide-out");
@@ -248,6 +235,38 @@
       }
       showingHeadline = !showingHeadline;
     }, 3000);
+
+    // Form submission logic
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm-password').value;
+
+      if (password !== confirm) {
+        alert('Passwords do not match.');
+        return;
+      }
+
+      fetch('../Controllers/UserController.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          if (data.status === 'success') {
+            window.location.href = 'login.php';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('An error occurred. Please try again.');
+        });
+    });
   </script>
 </body>
 </html>

@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id'])) {
+  header("Location: dashboard.php");
+  exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,8 +161,8 @@
   <header class="header">
     <img src="../Images/logo.png" alt="Libratek Logo" />
     <div class="nav-links">
-      <a href="register.html">Sign up</a>
-      <a href="login.html">Login</a>
+      <a href="register.php">Sign up</a>
+      <a href="login.php">Login</a>
     </div>
   </header>
 

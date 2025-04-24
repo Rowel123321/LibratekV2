@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+  header("Location: login.php");
+  exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +20,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
       padding: 20px;
+      position: relative;
     }
 
     .container {
@@ -22,6 +31,19 @@
     h1 {
       margin-bottom: 30px;
       color: #001f3f;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      padding: 10px 15px;
+      background-color: #ff4d4d;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     .year-section {
@@ -105,19 +127,19 @@
     }
 
     .book.unscanned {
-      background-color: #fff176; /* Yellow */
+      background-color: #fff176;
     }
 
     .book.matched {
-      background-color: #a5d6a7; /* Green */
+      background-color: #a5d6a7;
     }
 
     .book.mismatched {
-      background-color: #ffb74d; /* Orange */
+      background-color: #ffb74d;
     }
 
     .book.unreturned {
-      background-color: #f44336; /* Red */
+      background-color: #f44336;
       color: #fff;
     }
 
@@ -142,11 +164,27 @@
 </head>
 <body>
   <div class="container">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
     <h1>📚 Capstone Projects Shelf</h1>
     <div id="shelves-by-year"></div>
   </div>
 
   <script>
+    // 🧠 LOGOUT FUNCTION
+    function logout() {
+      fetch('../Controllers/UserController.php?action=logout')
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          window.location.href = 'login.php';
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Logout failed.');
+        });
+    }
+
+    // 📚 LOAD BOOK SHELVES
     const container = document.getElementById('shelves-by-year');
     const courseList = ['BSIT', 'BSCS', 'BLIS'];
     const bookMap = new Map();
@@ -235,58 +273,54 @@
         }
       });
 
-      setInterval(() => {
-  fetch('../Controllers/BooksController.php')
-    .then(response => response.json())
-    .then(data => {
-      const now = Date.now();
+    // 🔁 LIVE BOOK STATUS CHECK
+    setInterval(() => {
+      fetch('../Controllers/BooksController.php')
+        .then(response => response.json())
+        .then(data => {
+          const now = Date.now();
 
-      data.forEach(book => {
-        const entry = bookMap.get(book.book_title);
-        if (!entry) return;
+          data.forEach(book => {
+            const entry = bookMap.get(book.book_title);
+            if (!entry) return;
 
-        const { el, status, origin, reader } = entry;
-        const assigned = (book.assigned_tag || '').trim();
-        const scanned = (book.scanned_tag || '').trim();
-        const readerId = book.reader_id || '';
+            const { el, status, origin, reader } = entry;
+            const assigned = (book.assigned_tag || '').trim();
+            const scanned = (book.scanned_tag || '').trim();
+            const readerId = book.reader_id || '';
 
-        const scannedTime = book.last_scanned_at
-          ? new Date(book.last_scanned_at.replace(' ', 'T')).getTime()
-          : 0;
-        const diff = now - scannedTime;
+            const scannedTime = book.last_scanned_at
+              ? new Date(book.last_scanned_at.replace(' ', 'T')).getTime()
+              : 0;
+            const diff = now - scannedTime;
 
-        // Reset states
-        el.classList.remove('unscanned', 'matched', 'mismatched', 'unreturned', 'misplaced');
-        origin.textContent = '';
-        reader.textContent = '';
+            el.classList.remove('unscanned', 'matched', 'mismatched', 'unreturned', 'misplaced');
+            origin.textContent = '';
+            reader.textContent = '';
 
-        if (!scanned && scannedTime && diff >= 10000) {
-          el.classList.add('unreturned');
-          status.textContent = '🔴 Unreturned';
-        } else if (!scanned) {
-          el.classList.add('unscanned');
-          status.textContent = '⚪ Empty';
-        } else if (scanned === assigned) {
-          el.classList.add('matched');
-          status.textContent = '✅ Matched';
-          reader.textContent = `📡 Reader: ${readerId}`;
-        } else {
-          el.classList.add('misplaced'); // changed from 'mismatched'
-          status.textContent = '⚠️ Misplaced';
-          reader.textContent = `📡 Reader: ${readerId}`;
+            if (!scanned && scannedTime && diff >= 10000) {
+              el.classList.add('unreturned');
+              status.textContent = '🔴 Unreturned';
+            } else if (!scanned) {
+              el.classList.add('unscanned');
+              status.textContent = '⚪ Empty';
+            } else if (scanned === assigned) {
+              el.classList.add('matched');
+              status.textContent = '✅ Matched';
+              reader.textContent = `📡 Reader: ${readerId}`;
+            } else {
+              el.classList.add('misplaced');
+              status.textContent = '⚠️ Misplaced';
+              reader.textContent = `📡 Reader: ${readerId}`;
 
-          const correct = tagToBook.get(scanned);
-          if (correct) {
-            origin.textContent = `📍 Tag belongs to: ${correct.title} (${correct.course}, Year ${correct.year})`;
-          } else {
-            origin.textContent = `❌ Tag not assigned anywhere`;
-          }
-        }
-      });
-    });
-}, 500);
-
-    
+              const correct = tagToBook.get(scanned);
+              origin.textContent = correct
+                ? `📍 Tag belongs to: ${correct.title} (${correct.course}, Year ${correct.year})`
+                : `❌ Tag not assigned anywhere`;
+            }
+          });
+        });
+    }, 500);
   </script>
 </body>
 </html>
