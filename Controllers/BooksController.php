@@ -1,6 +1,6 @@
 <?php
 // Include the database connection
-include 'db.php'; // This must define $pdo (your PDO connection object)
+include 'DbController.php'; // This must define $pdo (your PDO connection object)
 
 header('Content-Type: application/json');
 

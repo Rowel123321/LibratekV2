@@ -152,7 +152,7 @@
     const bookMap = new Map();
     const tagToBook = new Map();
 
-    fetch('fetch_books.php')
+    fetch('../Controllers/BooksController.php')
       .then(response => response.json())
       .then(data => {
         const grouped = {};
@@ -235,56 +235,58 @@
         }
       });
 
-    setInterval(() => {
-      fetch('fetch_books.php')
-        .then(response => response.json())
-        .then(data => {
-          const now = Date.now();
+      setInterval(() => {
+  fetch('../Controllers/BooksController.php')
+    .then(response => response.json())
+    .then(data => {
+      const now = Date.now();
 
-          data.forEach(book => {
-            const entry = bookMap.get(book.book_title);
-            if (!entry) return;
+      data.forEach(book => {
+        const entry = bookMap.get(book.book_title);
+        if (!entry) return;
 
-            const { el, status, origin, reader } = entry;
-            const assigned = (book.assigned_tag || '').trim();
-            const scanned = (book.scanned_tag || '').trim();
-            const readerId = book.reader_id || '';
+        const { el, status, origin, reader } = entry;
+        const assigned = (book.assigned_tag || '').trim();
+        const scanned = (book.scanned_tag || '').trim();
+        const readerId = book.reader_id || '';
 
-            // Parse last scanned time from DB (add 'T' for compatibility)
-            const scannedTime = book.last_scanned_at
-              ? new Date(book.last_scanned_at.replace(' ', 'T')).getTime()
-              : 0;
-            const diff = now - scannedTime;
+        const scannedTime = book.last_scanned_at
+          ? new Date(book.last_scanned_at.replace(' ', 'T')).getTime()
+          : 0;
+        const diff = now - scannedTime;
 
-            el.classList.remove('unscanned', 'matched', 'mismatched', 'unreturned');
-            origin.textContent = '';
-            reader.textContent = '';
+        // Reset states
+        el.classList.remove('unscanned', 'matched', 'mismatched', 'unreturned', 'misplaced');
+        origin.textContent = '';
+        reader.textContent = '';
 
-            if (!scanned && scannedTime && diff >= 10000) {
-              el.classList.add('unreturned');
-              status.textContent = '🔴 Unreturned';
-            } else if (!scanned) {
-              el.classList.add('unscanned');
-              status.textContent = '❓ Unscanned';
-            } else if (scanned === assigned) {
-              el.classList.add('matched');
-              status.textContent = '✅ Matched';
-              reader.textContent = `📡 Reader: ${readerId}`;
-            } else {
-              el.classList.add('mismatched');
-              status.textContent = '⚠️ Mismatched';
-              reader.textContent = `📡 Reader: ${readerId}`;
+        if (!scanned && scannedTime && diff >= 10000) {
+          el.classList.add('unreturned');
+          status.textContent = '🔴 Unreturned';
+        } else if (!scanned) {
+          el.classList.add('unscanned');
+          status.textContent = '⚪ Empty';
+        } else if (scanned === assigned) {
+          el.classList.add('matched');
+          status.textContent = '✅ Matched';
+          reader.textContent = `📡 Reader: ${readerId}`;
+        } else {
+          el.classList.add('misplaced'); // changed from 'mismatched'
+          status.textContent = '⚠️ Misplaced';
+          reader.textContent = `📡 Reader: ${readerId}`;
 
-              const correct = tagToBook.get(scanned);
-              if (correct) {
-                origin.textContent = `📍 Tag belongs to: ${correct.title} (${correct.course}, Year ${correct.year})`;
-              } else {
-                origin.textContent = `❌ Tag not assigned anywhere`;
-              }
-            }
-          });
-        });
-    }, 500);
+          const correct = tagToBook.get(scanned);
+          if (correct) {
+            origin.textContent = `📍 Tag belongs to: ${correct.title} (${correct.course}, Year ${correct.year})`;
+          } else {
+            origin.textContent = `❌ Tag not assigned anywhere`;
+          }
+        }
+      });
+    });
+}, 500);
+
+    
   </script>
 </body>
 </html>
