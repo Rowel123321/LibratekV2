@@ -4,6 +4,7 @@ if (!isset($_SESSION['user_id'])) {
   header("Location: login.php");
   exit;
 }
+$userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not set
 ?>
 
 <!DOCTYPE html>
@@ -11,161 +12,39 @@ if (!isset($_SESSION['user_id'])) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Capstone Projects Shelf - Dashboard</title>
+  <title>Capstone Projects Shelf - Dashboard</title>  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    body {
-      background-color: #f4f7fa;
-      color: #333;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 20px;
-      position: relative;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    h1 {
-      margin-bottom: 30px;
-      color: #001f3f;
-    }
-
-    .logout-btn {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      padding: 10px 15px;
-      background-color: #ff4d4d;
-      border: none;
-      color: white;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .year-section {
-      margin-bottom: 50px;
-    }
-
-    .year-section h2 {
-      margin-bottom: 25px;
-      color: #007bff;
-    }
-
-    .courses-container {
-      display: flex;
-      justify-content: space-between;
-      gap: 30px;
-      margin-bottom: 30px;
-    }
-
-    .shelf {
-      background-color: #6e4c35;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-      flex: 1;
-      position: relative;
-      border-bottom: 10px solid #543a2a;
-    }
-
-    .course-label {
-      position: absolute;
-      top: -18px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #ff9800;
-      padding: 6px 18px;
-      border-radius: 25px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      font-weight: bold;
-      color: #fff;
-      font-size: 14px;
-    }
-
-    .books {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 25px;
-    }
-
-    .book {
-      background-color: #ffecb3;
-      width: 70px;
-      height: 100px;
-      border-radius: 4px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      cursor: pointer;
-      position: relative;
-      padding: 5px;
-    }
-
-    .book .title,
-    .book .status,
-    .book .origin,
-    .book .reader {
-      display: none;
-      text-align: center;
-      font-size: 11px;
-    }
-
-    .book:hover .title,
-    .book:hover .status,
-    .book:hover .origin,
-    .book:hover .reader {
-      display: block;
-    }
-
-    .book.unscanned {
-      background-color: #fff176;
-    }
-
-    .book.matched {
-      background-color: #a5d6a7;
-    }
-
-    .book.mismatched {
-      background-color: #ffb74d;
-    }
-
-    .book.unreturned {
-      background-color: #f44336;
-      color: #fff;
-    }
-
-    .shelf::before,
-    .shelf::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background-color: #543a2a;
-    }
-
-    .shelf::before {
-      left: -2px;
-    }
-
-    .shelf::after {
-      right: -2px;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/styles.css" />
 </head>
 <body>
+<div class="sidebar">
+  <div class="logo">
+  <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
+    <div class="section-label">Platform</div>
+    </div>
+    <a href="dashboard.php"><i class="fas fa-chart-bar"></i><span>Dashboard</span></a>
+    <a href="logs.php"><i class="fas fa-file-alt"></i><span>Logs</span></a>
+    <div class="spacer"></div>
+    <a href="logout.php" onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+  </div>
+
+  <div class="topbar">
+  <button class="toggle-btn" onclick="toggleSidebar()">
+    <i class="fas fa-table-columns" style="font-size: 18px;"></i>
+  </button>
+
+  <!-- User Dropdown -->
+  <div class="user-menu">
+    <i class="fas fa-user-circle user-icon" onclick="toggleUserDropdown()"></i>
+    <div id="userDropdown" class="user-dropdown hidden">
+      <div class="user-name">👤 <?php echo htmlspecialchars($userName); ?></div>
+      <button class="theme-toggle" id="themeToggleDropdown">🌙 Dark Mode</button>
+    </div>
+  </div>
+</div>
+  
   <div class="container">
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-    <h1>📚 Capstone Projects Shelf</h1>
     <div id="shelves-by-year"></div>
   </div>
 
@@ -221,53 +100,62 @@ if (!isset($_SESSION['user_id'])) {
           coursesContainer.className = 'courses-container';
 
           courseList.forEach(course => {
-            const shelf = document.createElement('div');
-            shelf.className = 'shelf';
+          const column = document.createElement('div');
+          column.className = 'course-column';
 
-            const label = document.createElement('div');
-            label.className = 'course-label';
-            label.textContent = course;
-            shelf.appendChild(label);
+          const label = document.createElement('div');
+          label.className = 'course-label';
+          label.textContent = course;
+          column.appendChild(label);
 
-            const booksWrapper = document.createElement('div');
-            booksWrapper.className = 'books';
+          const booksWrapper = document.createElement('div');
+          booksWrapper.className = 'books';
 
-            (grouped[year][course] || []).forEach(book => {
-              const bookDiv = document.createElement('div');
-              bookDiv.className = 'book';
+          (grouped[year][course] || []).forEach(book => {
+            const bookDiv = document.createElement('div');
+            bookDiv.className = 'book';
 
-              const titleEl = document.createElement('div');
-              titleEl.className = 'title';
-              titleEl.textContent = book.book_title;
+            const titleEl = document.createElement('div');
+            titleEl.className = 'title';
+            titleEl.textContent = book.book_title;
 
-              const statusEl = document.createElement('div');
-              statusEl.className = 'status';
+            const statusEl = document.createElement('div');
+            statusEl.className = 'status';
 
-              const originEl = document.createElement('div');
-              originEl.className = 'origin';
+            const originEl = document.createElement('div');
+            originEl.className = 'origin';
 
-              const readerEl = document.createElement('div');
-              readerEl.className = 'reader';
+            const readerEl = document.createElement('div');
+            readerEl.className = 'reader';
 
-              bookDiv.appendChild(titleEl);
-              bookDiv.appendChild(statusEl);
-              bookDiv.appendChild(originEl);
-              bookDiv.appendChild(readerEl);
+            const modal = document.createElement('div');
+            modal.className = 'book-modal';
+            modal.innerHTML = `
+              <div><strong>${book.book_title}</strong></div>
+              <div>📚 ${book.course}</div>
+              <div>🗓️ Year ${book.year}</div>
+              <div>🆔 Tag: ${book.assigned_tag || 'N/A'}</div>
+              <div>🛰️ Reader: ${book.reader_id || 'N/A'}</div>
+            `;
 
-              bookMap.set(book.book_title, {
-                el: bookDiv,
-                status: statusEl,
-                origin: originEl,
-                reader: readerEl
-              });
+            bookDiv.appendChild(modal);
 
-              booksWrapper.appendChild(bookDiv);
+            bookDiv.appendChild(modal);
+            bookDiv.appendChild(titleEl);
+
+            bookMap.set(book.book_title, {
+              el: bookDiv,
+              status: statusEl,
+              origin: originEl,
+              reader: readerEl
             });
 
-            shelf.appendChild(booksWrapper);
-            coursesContainer.appendChild(shelf);
+            booksWrapper.appendChild(bookDiv);
           });
 
+          column.appendChild(booksWrapper);
+          coursesContainer.appendChild(column);
+        });
           yearSection.appendChild(coursesContainer);
           container.appendChild(yearSection);
         }
@@ -321,6 +209,79 @@ if (!isset($_SESSION['user_id'])) {
           });
         });
     }, 500);
+
+    function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+
+    const theme = document.documentElement.getAttribute('data-theme');
+    updateLogo(theme); // ✅ This handles all image switching
+  }
+   // Initial theme setup
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeButton(savedTheme);
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateThemeButton(theme);
+      updateLogo(theme);
+    }
+      
+    // Update text on dropdown toggle
+    function updateThemeButton(theme) {
+      const toggleBtn = document.getElementById('themeToggleDropdown');
+      if (!toggleBtn) return;
+
+      if (theme === 'dark') {
+        toggleBtn.textContent = '☀️ Light Mode';
+      } else {
+        toggleBtn.textContent = '🌙 Dark Mode';
+      }
+    }
+
+    function updateLogo(theme) {
+      const logo = document.getElementById('themeLogo');
+      const sidebar = document.querySelector('.sidebar');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+
+      let logoName = '';
+
+      if (isCollapsed) {
+        logoName = theme === 'dark' ? 'cbook.png' : 'cbook1.png';
+        logo.style.width = '40px';
+      } else {
+        logoName = theme === 'dark' ? 'logo1.png' : 'logo2.png';
+        logo.style.width = '130px';
+      }
+
+      logo.src = `../Images/${logoName}`;
+    }
+
+    updateLogo(savedTheme);
+
+    // Dropdown toggle
+    const dropdown = document.getElementById('userDropdown');
+    function toggleUserDropdown() {
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Inside dropdown: Theme Toggle
+    const themeToggleDropdown = document.getElementById('themeToggleDropdown');
+    themeToggleDropdown.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+      const isClickInside = document.querySelector('.user-menu').contains(event.target);
+      if (!isClickInside) {
+        dropdown.classList.add('hidden');
+      }
+    });
   </script>
 </body>
 </html>
