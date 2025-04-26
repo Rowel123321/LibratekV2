@@ -5,6 +5,8 @@ if (!isset($_SESSION['user_id'])) {
   exit;
 }
 $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not set
+
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 
 <!DOCTYPE html>
@@ -20,16 +22,26 @@ $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not 
 <body>
 <div class="sidebar">
   <div class="logo">
-  <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
+    <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
     <div class="section-label">Platform</div>
-    </div>
-    <a href="dashboard.php"><i class="fas fa-chart-bar"></i><span>Dashboard</span></a>
-    <a href="logs.php"><i class="fas fa-file-alt"></i><span>Logs</span></a>
-    <div class="spacer"></div>
-    <a href="logout.php" onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
   </div>
 
-  <div class="topbar">
+  <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
+    <i class="fas fa-chart-bar"></i><span>Dashboard</span>
+  </a>
+
+  <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
+    <i class="fas fa-file-alt"></i><span>Logs</span>
+  </a>
+
+  <div class="spacer"></div>
+
+  <a href="logout.php" onclick="logout()" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+  </a>
+</div>
+
+<div class="topbar">
   <button class="toggle-btn" onclick="toggleSidebar()">
     <i class="fas fa-table-columns" style="font-size: 18px;"></i>
   </button>
@@ -45,6 +57,19 @@ $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not 
 </div>
   
   <div class="container">
+  <div class="program-filter">
+  <h2>CHOOSE A PROGRAM</h2>
+  <div class="custom-select-wrapper">
+    <select id="programSelect" onchange="filterProgram(this.value)">
+      <option value="all">📚 All Programs</option>
+      <option value="BSIT">🖥️ BSIT</option>
+      <option value="BSCS">💻 BSCS</option>
+      <option value="BLIS">📖 BLIS</option>
+    </select>
+  </div>
+  
+<hr class="section-divider">
+</div>
     <div id="shelves-by-year"></div>
   </div>
 
@@ -92,20 +117,19 @@ $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not 
           const yearSection = document.createElement('div');
           yearSection.className = 'year-section';
 
-          const yearHeading = document.createElement('h2');
-          yearHeading.textContent = `Year ${year}`;
-          yearSection.appendChild(yearHeading);
+        
 
           const coursesContainer = document.createElement('div');
           coursesContainer.className = 'courses-container';
 
           courseList.forEach(course => {
-          const column = document.createElement('div');
-          column.className = 'course-column';
+            const column = document.createElement('div');
+            column.className = 'course-column';
+            column.setAttribute('data-course', course);
 
           const label = document.createElement('div');
           label.className = 'course-label';
-          label.textContent = course;
+          label.textContent = `${course}-${year}`;
           column.appendChild(label);
 
           const booksWrapper = document.createElement('div');
@@ -282,6 +306,15 @@ $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not 
         dropdown.classList.add('hidden');
       }
     });
+
+    function filterProgram(courseName) {
+      const columns = document.querySelectorAll('.course-column');
+      columns.forEach(col => {
+        const course = col.getAttribute('data-course');
+        col.style.display = (courseName === 'all' || course === courseName) ? 'block' : 'none';
+      });
+    }
+    
   </script>
 </body>
 </html>
