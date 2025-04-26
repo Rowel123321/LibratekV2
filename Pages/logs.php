@@ -5,6 +5,8 @@ if (!isset($_SESSION['user_id'])) {
   exit;
 }
 $userName = $_SESSION['user_name'] ?? 'Unknown';
+
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 
 <!DOCTYPE html>
@@ -25,13 +27,23 @@ $userName = $_SESSION['user_name'] ?? 'Unknown';
 
 <div class="sidebar">
   <div class="logo">
-    <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img">
+    <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
     <div class="section-label">Platform</div>
   </div>
-  <a href="dashboard.php"><i class="fas fa-chart-bar"></i><span>Dashboard</span></a>
-  <a href="logs.php"><i class="fas fa-file-alt"></i><span>Logs</span></a>
+
+  <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
+    <i class="fas fa-chart-bar"></i><span>Dashboard</span>
+  </a>
+
+  <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
+    <i class="fas fa-file-alt"></i><span>Logs</span>
+  </a>
+
   <div class="spacer"></div>
-  <a href="logout.php" onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+
+  <a href="#" onclick="logout(event)" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+  </a>
 </div>
 
 <div class="topbar">
@@ -39,11 +51,22 @@ $userName = $_SESSION['user_name'] ?? 'Unknown';
     <i class="fas fa-table-columns" style="font-size: 18px;"></i>
   </button>
 
+  <!-- User Dropdown -->
   <div class="user-menu">
     <i class="fas fa-user-circle user-icon" onclick="toggleUserDropdown()"></i>
     <div id="userDropdown" class="user-dropdown hidden">
       <div class="user-name">👤 <?php echo htmlspecialchars($userName); ?></div>
-      <button class="theme-toggle" id="themeToggleDropdown">🌓</button>
+      <button class="theme-toggle" id="themeToggleDropdown">🌙 Dark Mode</button>
+    </div>
+  </div>
+</div>
+<div id="logoutModal" class="modal hidden">
+  <div class="modal-content">
+    <i class="fas fa-sign-out-alt modal-icon"></i>
+    <p>Are you sure you want to logout?</p>
+    <div class="modal-actions">
+      <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
+      <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
     </div>
   </div>
 </div>
@@ -67,17 +90,26 @@ $userName = $_SESSION['user_name'] ?? 'Unknown';
 </table>
 
 <script>
-  function logout() {
-    fetch('../Controllers/UserController.php?action=logout')
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        window.location.href = 'login.php';
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Logout failed.');
-      });
+    // 🧠 LOGOUT FUNCTION
+    function logout(event) {
+      event.preventDefault(); // ⛔ stop the browser from following the link
+      document.getElementById('logoutModal').classList.remove('hidden');
+    }
+
+    function closeLogoutModal() {
+      document.getElementById('logoutModal').classList.add('hidden');
+    }
+
+    function confirmLogout() {
+      fetch('../Controllers/UserController.php?action=logout')
+        .then(res => res.json())
+        .then(data => {
+          window.location.href = 'login.php';
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Logout failed.');
+        });
   }
 
   fetch('../Controllers/LogsController.php')

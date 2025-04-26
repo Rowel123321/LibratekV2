@@ -12,6 +12,7 @@ if (isset($_SESSION['user_id'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Libratek Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Days+One&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -186,6 +187,51 @@ if (isset($_SESSION['user_id'])) {
       color: white;
       text-decoration: underline;
     }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: var(--container-bg, #ffffff);
+      color: var(--text-color, #000000);
+      padding: 30px;
+      border-radius: 12px;
+      width: 320px;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      animation: popin 0.4s ease;
+    }
+
+    .modal-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      color: #27ae60; /* ✅ Green for success */
+    }
+
+    @keyframes popin {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -207,7 +253,13 @@ if (isset($_SESSION['user_id'])) {
         Track, locate, and organize your library with our RFID-based technology — making book handling faster, easier, and secure.
       </p>
     </div>
-
+    <!-- Login Success Modal -->
+    <div id="loginModal" class="modal hidden">
+      <div class="modal-content">
+      <i class="fas fa-check-circle modal-icon success"></i> 
+        <h3>Login Successful!</h3>
+      </div>
+    </div>
     <div class="right-panel">
       <div class="form-box">
         <img src="../Images/logo.png" alt="Libratek Logo">
@@ -282,8 +334,7 @@ if (isset($_SESSION['user_id'])) {
         .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
-            alert('Login successful!');
-            window.location.href = 'dashboard.php'; // Replace with your actual redirect
+            showLoginModal();
           } else {
             alert(data.message || 'Invalid credentials.');
           }
@@ -293,6 +344,15 @@ if (isset($_SESSION['user_id'])) {
           alert('Login error. Please try again.');
         });
     });
+
+    function showLoginModal() {
+      const modal = document.getElementById('loginModal');
+      modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.php'; // Redirect after 1.5 seconds
+      }, 1500);
+    }
   </script>
 </body>
 </html>

@@ -36,7 +36,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
   <div class="spacer"></div>
 
-  <a href="logout.php" onclick="logout()" class="logout-btn">
+  <a href="#" onclick="logout(event)" class="logout-btn">
     <i class="fas fa-sign-out-alt"></i><span>Logout</span>
   </a>
 </div>
@@ -68,6 +68,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     </select>
   </div>
   
+  <div id="logoutModal" class="modal hidden">
+  <div class="modal-content">
+    <i class="fas fa-sign-out-alt modal-icon"></i>
+    <p>Are you sure you want to logout?</p>
+    <div class="modal-actions">
+      <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
+      <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
+    </div>
+  </div>
+</div>
 <hr class="section-divider">
 </div>
     <div id="shelves-by-year"></div>
@@ -75,19 +85,26 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
   <script>
     // 🧠 LOGOUT FUNCTION
-    function logout() {
+    function logout(event) {
+      event.preventDefault(); // ⛔ stop the browser from following the link
+      document.getElementById('logoutModal').classList.remove('hidden');
+    }
+
+    function closeLogoutModal() {
+      document.getElementById('logoutModal').classList.add('hidden');
+    }
+
+    function confirmLogout() {
       fetch('../Controllers/UserController.php?action=logout')
         .then(res => res.json())
         .then(data => {
-          alert(data.message);
           window.location.href = 'login.php';
         })
         .catch(err => {
           console.error(err);
           alert('Logout failed.');
         });
-    }
-
+}
     // 📚 LOAD BOOK SHELVES
     const container = document.getElementById('shelves-by-year');
     const courseList = ['BSIT', 'BSCS', 'BLIS'];
