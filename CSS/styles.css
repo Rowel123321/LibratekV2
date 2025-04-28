@@ -337,6 +337,10 @@ body {
     background: linear-gradient(to right, #ffb74d, #e08d2e);
   }
   
+  .book.misplaced {
+    background: linear-gradient(to right, #ffc107, #ff9800); /* brighter orange */
+  }
+  
   .book.unreturned {
     background: linear-gradient(to right, #f44336, #b71c1c);
     color: white;
