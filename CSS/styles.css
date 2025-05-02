@@ -293,6 +293,7 @@ body {
     transition: z-index 0s, transform 0.2s ease;
   }
   
+  
   .book:hover {
     transform: scale(1.05);
     z-index: 9999 !important;
@@ -346,20 +347,33 @@ body {
     color: white;
   }
   
-  .book .title,
+  .book .title {
+    display: block;
+    font-size: 11px;
+    text-align: center;
+    padding-top: 2px;
+    color: #000;
+    writing-mode: vertical-rl;
+    white-space: normal;       /* ✅ Allow wrapping */
+    overflow-wrap: break-word; /* ✅ Break long words if needed */
+    word-break: break-word;    /* ✅ For aggressive line breaking */
+    max-height: 85px;          /* Optional: limit overflow */
+  }
+  
+  
   .book .status,
   .book .origin,
   .book .reader {
     display: none;
   }
   
-  .book:hover .title,
   .book:hover .status,
   .book:hover .origin,
   .book:hover .reader {
     display: block;
     font-size: 11px;
   }
+  
   
   .program-filter {
     text-align: left;
@@ -573,3 +587,20 @@ body {
       opacity: 1;
     }
   }
+
+
+  .clear-btn {
+    margin-top: 6px;
+    padding: 5px 12px;
+    background-color: #ffc107;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .clear-btn:hover {
+    background-color: #e0a800;
+  }
+  

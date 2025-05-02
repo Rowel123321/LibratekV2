@@ -19,12 +19,17 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/styles.css" />
 </head>
+
 <body>
 <div class="sidebar">
   <div class="logo">
     <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
     <div class="section-label">Platform</div>
   </div>
+
+  <div style="text-align: center; margin-bottom: 10px;">
+  <button id="clearAllBtn" class="clear-btn">Check Unreturned Book</button>
+</div>
 
   <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
     <i class="fas fa-chart-bar"></i><span>Dashboard</span>
@@ -65,6 +70,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       <option value="BSIT">🖥️ BSIT</option>
       <option value="BSCS">💻 BSCS</option>
       <option value="BLIS">📖 BLIS</option>
+      <option value="MSIT">📖 MSIT</option>
+      <option value="DIT">📖 DIT</option>
+      <option value="MLIS">📖 MLIS</option>
     </select>
   </div>
   
@@ -107,7 +115,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 }
     // 📚 LOAD BOOK SHELVES
     const container = document.getElementById('shelves-by-year');
-    const courseList = ['BSIT', 'BSCS', 'BLIS'];
+    const courseList = ['BSIT', 'BSCS', 'BLIS','MSIT' ,'DIT' ,'MLIS'];
     const bookMap = new Map();
     const tagToBook = new Map();
 
@@ -121,13 +129,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
           if (!grouped[book.year][book.course]) grouped[book.year][book.course] = [];
           grouped[book.year][book.course].push(book);
 
-          if (book.assigned_tag) {
-            tagToBook.set(book.assigned_tag.trim(), {
-              title: book.book_title,
-              course: book.course,
-              year: book.year
-            });
-          }
+        if (book.assigned_tag) {
+  tagToBook.set(book.assigned_tag.trim(), book);
+}
+
         });
 
         for (const year in grouped) {
@@ -169,15 +174,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             const readerEl = document.createElement('div');
             readerEl.className = 'reader';
 
-            const modal = document.createElement('div');
-            modal.className = 'book-modal';
-            modal.innerHTML = `
-              <div><strong>${book.book_title}</strong></div>
-              <div>📚 ${book.course}</div>
-              <div>🗓️ Year ${book.year}</div>
-              <div>🆔 Tag: ${book.assigned_tag || 'N/A'}</div>
-              <div>🛰️ Reader: ${book.reader_id || 'N/A'}</div>
-            `;
+       const modal = document.createElement('div');
+modal.className = 'book-modal';
+modal.innerHTML = `
+  <div><strong>${book.complete_book_title}</strong></div>
+  <div> Author: ${book.author || 'Unknown'}</div>
+  <div> ${book.course}</div>
+  <div> Year ${book.year}</div>
+
+`;
+
 
             bookDiv.appendChild(modal);
 
@@ -227,26 +233,60 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             origin.textContent = '';
             reader.textContent = '';
 
-            if (!scanned && scannedTime && diff >= 10000) {
-              el.classList.add('unreturned');
-              status.textContent = '🔴 Unreturned';
-            } else if (!scanned) {
+            if (!scanned && !book.last_scanned_at) {
+  el.classList.add('unreturned');
+  status.textContent = '🔴 Unreturned';
+}
+ else if (!scanned) {
               el.classList.add('unscanned');
               status.textContent = '⚪ Empty';
             } else if (scanned === assigned) {
               el.classList.add('matched');
               status.textContent = '✅ Matched';
               reader.textContent = `📡 Reader: ${readerId}`;
-            } else {
-              el.classList.add('misplaced');
-              status.textContent = '⚠️ Misplaced';
-              reader.textContent = `📡 Reader: ${readerId}`;
+        } else {
+  el.classList.add('misplaced');
+  status.textContent = '⚠️ Misplaced';
+  reader.textContent = `📡 Reader: ${readerId}`;
 
-              const correct = tagToBook.get(scanned);
-              origin.textContent = correct
-                ? `📍 Tag belongs to: ${correct.title} (${correct.course}, Year ${correct.year})`
-                : `❌ Tag not assigned anywhere`;
-            }
+  const correct = tagToBook.get(scanned);
+
+  if (correct) {
+    origin.textContent = `📍 Tag belongs to: ${correct.book_title} (${correct.course}, Year ${correct.year})`;
+
+    // Update modal
+    const modal = el.querySelector('.book-modal');
+    modal.innerHTML = `
+  <div><strong>${correct.complete_book_title}</strong></div>
+  <div> Author: ${correct.author || 'Unknown'}</div>
+  <div style="margin-top: 6px; font-style: italic; color: #aaa;">
+     This book belongs to ${correct.course}, Year ${correct.year}
+  </div>
+`;
+
+
+    // ✅ Also update the visible title
+    const titleEl = el.querySelector('.title');
+    if (titleEl) titleEl.textContent = correct.book_title;
+
+  } else {
+    origin.textContent = `❌ Tag not assigned anywhere`;
+
+    const modal = el.querySelector('.book-modal');
+    modal.innerHTML = `
+      <div><strong>Unknown Book</strong></div>
+      <div> Author: Unknown</div>
+      <div> Unknown Course</div>
+      <div> Year: N/A</div>
+    `;
+
+    const titleEl = el.querySelector('.title');
+    if (titleEl) titleEl.textContent = 'Unknown';
+  }
+}
+
+
+
           });
         });
     }, 500);
@@ -332,6 +372,33 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       });
     }
     
+
+
+
+
+
+
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!confirm('Are you sure you want to clear last scanned time for all unscanned books?')) return;
+
+  fetch('../Controllers/ClearScannedAtController.php', {
+    method: 'POST'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('Unreturned Book Highligh Color Red');
+      location.reload(); // or re-fetch your book data manually
+    } else {
+      alert('Failed: ' + data.error);
+    }
+  })
+  .catch(() => alert('Request failed.'));
+});
+
+
+
+
   </script>
 </body>
 </html>
