@@ -25,6 +25,7 @@
     --tag-color: #2c3e50;
     --select-bg: #ffffff;         /* white dropdown */
     --select-text: #1c1c1c;       /* dark text */
+    --unreturned-color: #333;
   }
   
   [data-theme="dark"] {
@@ -53,6 +54,7 @@
     --book-modal-text: #ffffff;
     --select-bg: #ffffff;         /* white dropdown */
     --select-text: #1c1c1c;       /* dark text */
+    --unreturned-color: #fff;
   }
 body {
     background-color: var(--bg-color);
@@ -588,19 +590,32 @@ body {
     }
   }
 
-
-  .clear-btn {
-    margin-top: 6px;
-    padding: 5px 12px;
-    background-color: #ffc107;
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px; /* spacing between select and button */
+    margin: 10px 12px 0px 0px;
+  }
+  
+  /* Keep your custom unreturned-btn design clean */
+  .unreturned-btn {
+    background: none;
     border: none;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--unreturned-padding, 6px 12px);
+    font-size: var(--unreturned-font-size, 15px);
+    color: var(--unreturned-color, #ccc);
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: color 0.2s;
   }
   
-  .clear-btn:hover {
-    background-color: #e0a800;
+  .unreturned-btn:hover {
+    color: var(--unreturned-hover, #ffc107);
   }
-  
+
+  .dot-separator {
+    margin: 0 10px;
+    color: #888;
+    font-size: 20px;
+    line-height: 1;
+    user-select: none;
+  }

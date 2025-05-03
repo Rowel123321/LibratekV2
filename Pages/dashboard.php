@@ -27,14 +27,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <div class="section-label">Platform</div>
   </div>
 
-  <div style="text-align: center; margin-bottom: 10px;">
-  <button id="clearAllBtn" class="clear-btn">Check Unreturned Book</button>
-</div>
-
+ <!-- Sidebar item with hover-reveal button -->
+  <!-- Dashboard menu item -->
+  <div class="sidebar-item-wrapper">
   <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
     <i class="fas fa-chart-bar"></i><span>Dashboard</span>
   </a>
-
+</div>
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
   </a>
@@ -61,33 +60,41 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </div>
 </div>
   
-  <div class="container">
+<div class="container">
   <div class="program-filter">
-  <h2>CHOOSE A PROGRAM</h2>
-  <div class="custom-select-wrapper">
-    <select id="programSelect" onchange="filterProgram(this.value)">
-      <option value="all">📚 All Programs</option>
-      <option value="BSIT">🖥️ BSIT</option>
-      <option value="BSCS">💻 BSCS</option>
-      <option value="BLIS">📖 BLIS</option>
-      <option value="MSIT">📖 MSIT</option>
-      <option value="DIT">📖 DIT</option>
-      <option value="MLIS">📖 MLIS</option>
-    </select>
-  </div>
-  
-  <div id="logoutModal" class="modal hidden">
-  <div class="modal-content">
-    <i class="fas fa-sign-out-alt modal-icon"></i>
-    <p>Are you sure you want to logout?</p>
-    <div class="modal-actions">
-      <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
-      <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
+    <h2>CHOOSE A PROGRAM</h2>
+
+    <div class="filter-bar">
+      <div class="custom-select-wrapper">
+        <select id="programSelect" onchange="filterProgram(this.value)">
+          <option value="all">📚 All Programs</option>
+          <option value="BSIT">🖥️ BSIT</option>
+          <option value="BSCS">💻 BSCS</option>
+          <option value="BLIS">📖 BLIS</option>
+          <option value="MSIT">📖 MSIT</option>
+          <option value="DIT">📖 DIT</option>
+          <option value="MLIS">📖 MLIS</option>
+        </select>
+      </div>
+
+      <span class="dot-separator">•</span>
+      
+      <button id="clearAllBtn" class="unreturned-btn">Check Unreturned Book</button>
     </div>
+
+    <div id="logoutModal" class="modal hidden">
+      <div class="modal-content">
+        <i class="fas fa-sign-out-alt modal-icon"></i>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-actions">
+          <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
+          <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-divider">
   </div>
-</div>
-<hr class="section-divider">
-</div>
     <div id="shelves-by-year"></div>
   </div>
 
@@ -115,7 +122,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 }
     // 📚 LOAD BOOK SHELVES
     const container = document.getElementById('shelves-by-year');
-    const courseList = ['BSIT', 'BSCS', 'BLIS','MSIT' ,'DIT' ,'MLIS'];
+    const courseList = ['BSIT', 'BSCS', 'BLIS','MIT' ,'DIT' ,'MLIS'];
     const bookMap = new Map();
     const tagToBook = new Map();
 
@@ -372,11 +379,6 @@ modal.innerHTML = `
       });
     }
     
-
-
-
-
-
 
     document.getElementById('clearAllBtn').addEventListener('click', () => {
   if (!confirm('Are you sure you want to clear last scanned time for all unscanned books?')) return;
