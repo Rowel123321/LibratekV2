@@ -451,20 +451,22 @@ body {
   font-weight: bold;
 }
 
+.action-unreturned {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
 .action-misplaced {
   color: #f39c12;
   font-weight: bold;
 }
 
-.action-unreturned {
-  color: #c0392b;
+.action-removed {
+  color: #fbff00fd;
   font-weight: bold;
 }
 
-.action-unauthorized {
-  color: #8e44ad;
-  font-weight: bold;
-}
+
 
 /* USER ICON */
 .user-menu {

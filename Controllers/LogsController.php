@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $readerId = trim($data['reader_id']);
     $actionType = trim($data['action_type']);
 
-    $allowedActions = ['normal', 'taken_outside', 'misplaced', 'unreturned', 'unauthorized', 'reshelved'];
+    $allowedActions = ['normal', 'taken_outside', 'misplaced', 'unreturned', 'unauthorized', 'reshelved', 'removed'];
     if (!in_array($actionType, $allowedActions)) {
         echo json_encode(["status" => "error", "message" => "Invalid action_type"]);
         exit;
@@ -42,9 +42,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Handle fetching logs
+    // Handle fetching logs with optional filters
     try {
-        $stmt = $pdo->query("SELECT * FROM rfid_logs ORDER BY created_at DESC");
+        $actionType = $_GET['action_type'] ?? null;
+        $date = $_GET['date'] ?? null;
+
+        $sql = "SELECT * FROM rfid_logs";
+        $where = [];
+        $params = [];
+
+        if (!empty($actionType)) {
+            $allowedActions = ['normal', 'taken_outside', 'misplaced', 'unreturned', 'unauthorized', 'reshelved', 'removed'];
+            if (!in_array($actionType, $allowedActions)) {
+                echo json_encode(["status" => "error", "message" => "Invalid action_type"]);
+                exit;
+            }
+            $where[] = "action_type = :action_type";
+            $params[':action_type'] = $actionType;
+        }
+
+        if (!empty($date)) {
+            $where[] = "DATE(created_at) = :log_date";
+            $params[':log_date'] = $date;
+        }
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+
+        $sql .= " ORDER BY created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode($logs);

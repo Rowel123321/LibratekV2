@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Simulate RFID Actions</title>
+  <meta charset="UTF-8">
+  <title>Simulate ESP32 RFID POST</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,62 +12,35 @@
     }
     button {
       padding: 10px 20px;
-      font-size: 16px;
-      margin: 10px;
+      font-size: 18px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>📚 Simulate RFID Tag Actions</h1>
-
-  <button onclick="sendNormal()">📗 Normal (Matched Tag)</button>
-  <button onclick="sendMisplaced()">📙 Misplaced (Wrong Tag)</button>
-  <button onclick="sendRemoved()">❌ Removed (No Tag)</button>
+  <h1>🔁 Simulate ESP32 RFID Exit POST</h1>
+  <button onclick="sendRFID()">Send Simulated RFID Scan</button>
 
   <script>
-    const endpoint = '../Controllers/ReaderController.php'; // adjust if needed
-
-    function sendNormal() {
-      fetch(endpoint, {
+    function sendRFID() {
+      fetch('../Controllers/ExitZoneController.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          rfid_tag: 'MATCHED_TAG',   // tag must match assigned_tag in DB
-          reader_id: 'reader_1'
+          rfid_tag: '1234567890',
+          reader_id: 'exit_1'
         })
       })
       .then(res => res.json())
-      .then(data => alert('Normal ➜ ' + JSON.stringify(data)))
-      .catch(err => console.error(err));
-    }
-
-    function sendMisplaced() {
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rfid_tag: 'WRONG_TAG',     // tag does NOT match assigned_tag in DB
-          reader_id: 'reader_1'
-        })
+      .then(data => {
+        alert('Response: ' + JSON.stringify(data));
       })
-      .then(res => res.json())
-      .then(data => alert('Misplaced ➜ ' + JSON.stringify(data)))
-      .catch(err => console.error(err));
-    }
-
-    function sendRemoved() {
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reader_id: 'reader_1',
-          state: 'removed'           // tells PHP to clear scanned_tag
-        })
-      })
-      .then(res => res.json())
-      .then(data => alert('Removed ➜ ' + JSON.stringify(data)))
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Request failed. See console for details.');
+      });
     }
   </script>
 </body>

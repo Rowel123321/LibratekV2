@@ -27,13 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 🟥 If tag is removed
     if (isset($data['state']) && $data['state'] === 'removed') {
-        // Get current scanned_tag and book title for logging
-        $fetch = $pdo->prepare("SELECT scanned_tag, book_title FROM reader_book_status WHERE reader_id = ?");
+        // Get current scanned_tag and complete_book_title for logging
+        $fetch = $pdo->prepare("SELECT scanned_tag, complete_book_title FROM reader_book_status WHERE reader_id = ?");
         $fetch->execute([$readerId]);
         $row = $fetch->fetch(PDO::FETCH_ASSOC);
 
         $scannedTag = $row['scanned_tag'] ?? '';
-        $bookTitle = $row['book_title'] ?? 'Unknown';
+        $bookTitle = $row['complete_book_title'] ?? 'Unknown';
 
         // Clear scanned_tag and update time
         $stmt = $pdo->prepare("
@@ -72,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$scannedTag, $readerId]);
 
         // Fetch book info
-        $bookCheck = $pdo->prepare("SELECT book_title, assigned_tag FROM reader_book_status WHERE reader_id = ?");
+        $bookCheck = $pdo->prepare("SELECT complete_book_title, assigned_tag FROM reader_book_status WHERE reader_id = ?");
         $bookCheck->execute([$readerId]);
         $book = $bookCheck->fetch(PDO::FETCH_ASSOC);
 
         if ($book) {
             $assignedTag = trim($book['assigned_tag']);
-            $bookTitle = $book['book_title'];
+            $bookTitle = $book['complete_book_title'] ?? 'Unknown';
 
             if ($assignedTag === $scannedTag) {
                 $log = $pdo->prepare("

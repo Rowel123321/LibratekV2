@@ -14,35 +14,57 @@
     #alertModal {
       display: none;
       position: fixed;
-      top: 30px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
       z-index: 1000;
-      font-size: 18px;
+      font-size: 20px;
+    }
+
+    #closeBtn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 16px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #closeBtn:hover {
+      background: #c0392b;
     }
   </style>
 </head>
 <body>
   <h1>📡 RFID Exit Monitoring</h1>
-  <div id="alertModal"><span id="alertText">Book taken outside</span></div>
+  <div id="alertModal">
+    <span id="alertText">Book taken outside</span><br/>
+    <button id="closeBtn">Dismiss</button>
+  </div>
 
   <script>
-    let lastSeenTime = null; // In-memory only — reset on page reload
-  
+    let lastSeenTime = null;
+
     function showModal(message) {
       const modal = document.getElementById('alertModal');
       const text = document.getElementById('alertText');
       text.textContent = message;
       modal.style.display = 'block';
-      setTimeout(() => {
-        modal.style.display = 'none';
-      }, 5000);
     }
-  
+
+    function hideModal() {
+      document.getElementById('alertModal').style.display = 'none';
+    }
+
+    document.getElementById('closeBtn').addEventListener('click', hideModal);
+
     setInterval(() => {
       fetch('../Controllers/ExitZoneController.php')
         .then(response => response.json())
@@ -51,8 +73,7 @@
             const latest = data[0];
             const timestamp = latest.scanned_at;
             const bookTitle = latest.book_title;
-  
-            // Only show if this is a NEW scan (not on page load)
+
             if (timestamp && timestamp !== lastSeenTime) {
               if (lastSeenTime !== null) {
                 showModal(`📦 Book "${bookTitle}" was taken outside`);
@@ -64,6 +85,5 @@
         .catch(error => console.error('Fetch error:', error));
     }, 1000);
   </script>
-  
 </body>
 </html>
