@@ -13,6 +13,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <head>
   <meta charset="UTF-8">
   <title>Book Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
+  <link rel="stylesheet" href="../CSS/styles.css" />
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
 
@@ -75,54 +78,100 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </style>
 </head>
 <body>
+<div class="sidebar">
+  <div class="logo">
+    <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
+    <div class="section-label">Platform</div>
+  </div>
+  <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
+    <i class="fas fa-chart-bar"></i><span>Dashboard</span>
+  </a>
+  <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
+    <i class="fas fa-file-alt"></i><span>Logs</span>
+  </a>
+  <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
+  <i class="fas fa-folder"></i><span>Manage Books</span>
+  </a>
+  <div class="spacer"></div>
+  <a href="#" onclick="logout(event)" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+  </a>
+</div>
 
-<h2>📚 Book Management</h2>
+<div class="topbar">
+  <button class="toggle-btn" onclick="toggleSidebar()">
+    <i class="fas fa-table-columns" style="font-size: 18px;"></i>
+  </button>
+  <div class="user-menu">
+    <i class="fas fa-user-circle user-icon" onclick="toggleUserDropdown()"></i>
+    <div id="userDropdown" class="user-dropdown hidden">
+      <div class="user-name">👤 <?php echo htmlspecialchars($userName); ?></div>
+      <button class="theme-toggle" id="themeToggleDropdown">🌙 Dark Mode</button>
+    </div>
+  </div>
+</div>
+
+<div id="logoutModal" class="modal hidden">
+  <div class="modal-content">
+    <i class="fas fa-sign-out-alt modal-icon"></i>
+    <p>Are you sure you want to logout?</p>
+    <div class="modal-actions">
+      <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
+      <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="main-content">
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('listTab')">📋 Book List</button>
   <button class="tab-btn" onclick="switchTab('addTab')">➕ Add Book</button>
 </div>
 
-<div id="listTab" class="tab-content active">
-  <table id="bookTable">
-    <thead>
-      <tr>
-        <th>Reader ID</th>
-        <th>Book Title</th>
-        <th>Complete Title</th>
-        <th>Author</th>
-        <th>Tag</th>
-        <th>Year</th>
-        <th>Course</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="8">Loading...</td></tr>
-    </tbody>
-  </table>
-</div>
 
-<div id="addTab" class="tab-content">
-  <form id="addForm">
-    <label>Reader ID: <input name="reader_id" required /></label>
-    <label>Book Title: <input name="book_title" required /></label>
-    <label>Complete Title: <input name="complete_book_title" required /></label>
-    <label>Author: <input name="author" required /></label>
-    <label>Tag: <input name="assigned_tag" required /></label>
-    <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
-    <label>Course:
-      <select name="course" required>
-        <option value="">-- Select Course --</option>
-        <option value="BSIT">BSIT</option>
-        <option value="BSCS">BSCS</option>
-        <option value="BLIS">BLIS</option>
-        <option value="DIT">DIT</option>
-        <option value="MLIS">MLIS</option>
-      </select>
-    </label>
-    <button type="submit">➕ Add Book</button>
-  </form>
-</div>
+<div id="listTab" class="tab-content active">
+      <table id="bookTable">
+        <thead>
+          <tr>
+            <th>Reader ID</th>
+            <th>Book Title</th>
+            <th>Complete Title</th>
+            <th>Author</th>
+            <th>Tag</th>
+            <th>Year</th>
+            <th>Course</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="8">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="addTab" class="tab-content">
+      <form id="addForm">
+        <label>Reader ID: <input name="reader_id" required /></label>
+        <label>Book Title: <input name="book_title" required /></label>
+        <label>Complete Title: <input name="complete_book_title" required /></label>
+        <label>Author: <input name="author" required /></label>
+        <label>Tag: <input name="assigned_tag" required /></label>
+        <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
+        <label>Course:
+          <select name="course" required>
+            <option value="">-- Select Course --</option>
+            <option value="BSIT">BSIT</option>
+            <option value="BSCS">BSCS</option>
+            <option value="BLIS">BLIS</option>
+            <option value="DIT">DIT</option>
+            <option value="MLIS">MLIS</option>
+          </select>
+        </label>
+        <button type="submit">➕ Add Book</button>
+      </form>
+    </div>
+  </div>
 
 <div class="modal" id="editModal" onclick="clickOutsideToClose(event)">
   <div class="modal-content">
@@ -166,6 +215,24 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add("active");
     document.getElementById(tabId).classList.add("active");
   }
+  function logout(event) {
+  event.preventDefault();
+  document.getElementById('logoutModal').classList.remove('hidden'); // Make it visible
+}
+  function closeLogoutModal() {
+    document.getElementById('logoutModal').classList.add('hidden');
+  }
+
+  function confirmLogout() {
+    fetch('../Controllers/UserController.php?action=logout')
+      .then(res => res.json())
+      .then(() => window.location.href = 'login.php')
+      .catch(err => {
+        console.error(err);
+        alert('Logout failed.');
+      });
+  }
+
 
   function loadBooks() {
     fetch('../Controllers/BookController.php')
@@ -283,6 +350,81 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   yearEditInput.min = yearMin;
   yearEditInput.max = yearMax;
   yearEditInput.placeholder = `${yearMin} - ${yearMax}`;
+
+
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+
+    const theme = document.documentElement.getAttribute('data-theme');
+    updateLogo(theme); // ✅ This handles all image switching
+  }
+   // Initial theme setup
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeButton(savedTheme);
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateThemeButton(theme);
+      updateLogo(theme);
+    }
+      
+    // Update text on dropdown toggle
+    function updateThemeButton(theme) {
+      const toggleBtn = document.getElementById('themeToggleDropdown');
+      if (!toggleBtn) return;
+
+      if (theme === 'dark') {
+        toggleBtn.textContent = '☀️ Light Mode';
+      } else {
+        toggleBtn.textContent = '🌙 Dark Mode';
+      }
+    }
+
+    function updateLogo(theme) {
+      const logo = document.getElementById('themeLogo');
+      const sidebar = document.querySelector('.sidebar');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+
+      let logoName = '';
+
+      if (isCollapsed) {
+        logoName = theme === 'dark' ? 'cbook.png' : 'cbook1.png';
+        logo.style.width = '40px';
+      } else {
+        logoName = theme === 'dark' ? 'logo1.png' : 'logo2.png';
+        logo.style.width = '130px';
+      }
+
+      logo.src = `../Images/${logoName}`;
+    }
+
+    updateLogo(savedTheme);
+
+    // Dropdown toggle
+    const dropdown = document.getElementById('userDropdown');
+    function toggleUserDropdown() {
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Inside dropdown: Theme Toggle
+    const themeToggleDropdown = document.getElementById('themeToggleDropdown');
+    themeToggleDropdown.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+      const isClickInside = document.querySelector('.user-menu').contains(event.target);
+      if (!isClickInside) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
 </script>
 
 </body>

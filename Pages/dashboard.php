@@ -73,6 +73,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
   </a>
+  <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
+  <i class="fas fa-folder"></i><span>Manage Books</span>
+  </a>
 
   <div class="spacer"></div>
 

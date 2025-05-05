@@ -451,21 +451,59 @@ body {
   font-weight: bold;
 }
 
-.action-unreturned {
-  color: #e74c3c;
-  font-weight: bold;
-}
-
 .action-misplaced {
   color: #f39c12;
   font-weight: bold;
 }
 
-.action-removed {
-  color: #fbff00fd;
+.action-unreturned {
+  color: #c0392b;
   font-weight: bold;
 }
 
+.action-unauthorized {
+  color: #8e44ad;
+  font-weight: bold;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end; /* 🠔 Align to right */
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin: 40px 20px 10px auto; /* 🠔 Right aligned with margin auto-left */
+  transition: margin-left 0.3s ease;
+  max-width: calc(100% - 260px); /* Adjust for sidebar */
+  margin-top: 50px;
+  margin-right: -2px;
+  margin-bottom: -25px;
+}
+.sidebar.collapsed ~ .filters {
+  margin-left: 80px;
+}
+
+.filters label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.filters select,
+.filters input[type="date"] {
+  margin-top: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--select-bg);
+  color: var(--select-text);
+  min-width: 160px;
+}
 
 
 /* USER ICON */
@@ -621,3 +659,176 @@ body {
     line-height: 1;
     user-select: none;
   }
+
+  /* === BOOK MANAGEMENT TAB & TABLE LAYOUT === */
+
+ /* Main content shifts with sidebar */
+.main-content {
+  margin-left: 240px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .main-content {
+  margin-left: 80px;
+}
+[data-theme='dark'] th {
+  color: #ffffff; /* white text */
+  background-color: #2a2a2a; /* optional: darker background for contrast */
+}
+/* Make table 100% responsive inside main-content */
+.main-content table#bookTable {
+  width: 100%;
+  max-width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+  background: var(--table-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--table-border);
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+.tabs {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: #ddd;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  margin-top: 40px;
+
+}
+
+.tab-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+.tab-content {
+  overflow-x: hidden;
+}
+
+.main-content table {
+  transition: margin-left 0.3s ease;
+  margin-left: 0;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid var(--table-border);
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+th {
+  background-color: var(--table-head-bg);
+  color: var(--table-head-text);
+  font-size: 14px;
+}
+
+tr:nth-child(even) {
+  background-color: var(--table-row-alt);
+}
+
+#bookTable th:nth-child(8),
+#bookTable td:nth-child(8) {
+  width: 12%;
+  max-width: 120px;
+  white-space: nowrap;
+  text-align: center;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+#bookTable th:nth-child(1),
+#bookTable td:nth-child(1) { width: 6%; max-width: 60px; }
+#bookTable th:nth-child(2),
+#bookTable td:nth-child(2) { width: 6%; max-width: 60px; }
+#bookTable th:nth-child(2),
+#bookTable td:nth-child(2) { width: 6%; max-width: 60px; }
+#bookTable th:nth-child(5),
+#bookTable td:nth-child(5) { width: 6%; max-width: 60px; }
+#bookTable th:nth-child(6),
+#bookTable td:nth-child(6) { width: 6%; max-width: 60px; }
+#bookTable th:nth-child(7),
+#bookTable td:nth-child(7) { width: 8%; max-width: 80px; }
+
+/* Minimize complete title width */
+#bookTable th:nth-child(3),
+#bookTable td:nth-child(3) {
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+/* === FORM STYLES (Add/Edit Book) === */
+
+form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--select-bg);
+  color: var(--select-text);
+  font-size: 14px;
+}
+
+form button[type="submit"] {
+  margin-top: 16px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+/* === EDIT BUTTON STYLES === */
+
+.edit-btn {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* === BOOK MODAL ADJUSTMENTS === */
+
+#editModal .modal-content,
+#addModal .modal-content {
+  max-width: 480px;
+  width: 90%;
+  padding: 25px;
+  border-radius: 10px;
+  background-color: var(--container-bg);
+  color: var(--text-color);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}

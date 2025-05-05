@@ -73,6 +73,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
   </a>
+  <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
+  <i class="fas fa-folder"></i><span>Manage Books</span>
+  </a>
   <div class="spacer"></div>
   <a href="#" onclick="logout(event)" class="logout-btn">
     <i class="fas fa-sign-out-alt"></i><span>Logout</span>
@@ -103,7 +106,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </div>
 </div>
 
-<h1>📜 RFID Activity Logs</h1>
 
 <!-- 🔽 Filters -->
 <div class="filters">
