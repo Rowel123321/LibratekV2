@@ -293,66 +293,72 @@ if (isset($_SESSION['user_id'])) {
   </div>
 
   <script>
-    const headline = document.getElementById("headline");
-    const logo = document.getElementById("logo");
+  const headline = document.getElementById("headline");
+  const logo = document.getElementById("logo");
 
-    let showingHeadline = true;
+  let showingHeadline = true;
 
-    setInterval(() => {
-      if (showingHeadline) {
-        headline.classList.remove("slide-in");
-        headline.classList.add("slide-out");
-        setTimeout(() => {
-          headline.style.opacity = 0;
-          logo.classList.remove("slide-out");
-          logo.classList.add("slide-in");
-          logo.style.opacity = 1;
-        }, 500);
-      } else {
-        logo.classList.remove("slide-in");
-        logo.classList.add("slide-out");
-        setTimeout(() => {
-          logo.style.opacity = 0;
-          headline.classList.remove("slide-out");
-          headline.classList.add("slide-in");
-          headline.style.opacity = 1;
-        }, 500);
-      }
-      showingHeadline = !showingHeadline;
-    }, 3000);
-
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      fetch('../Controllers/UserController.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success') {
-            showLoginModal();
-          } else {
-            alert(data.message || 'Invalid credentials.');
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert('Login error. Please try again.');
-        });
-    });
-
-    function showLoginModal() {
-      const modal = document.getElementById('loginModal');
-      modal.classList.remove('hidden');
-
+  setInterval(() => {
+    if (showingHeadline) {
+      headline.classList.remove("slide-in");
+      headline.classList.add("slide-out");
       setTimeout(() => {
-        window.location.href = 'dashboard.php'; // Redirect after 1.5 seconds
-      }, 1500);
+        headline.style.opacity = 0;
+        logo.classList.remove("slide-out");
+        logo.classList.add("slide-in");
+        logo.style.opacity = 1;
+      }, 500);
+    } else {
+      logo.classList.remove("slide-in");
+      logo.classList.add("slide-out");
+      setTimeout(() => {
+        logo.style.opacity = 0;
+        headline.classList.remove("slide-out");
+        headline.classList.add("slide-in");
+        headline.style.opacity = 1;
+      }, 500);
     }
-  </script>
+    showingHeadline = !showingHeadline;
+  }, 3000);
+
+  // ✅ LOGIN SCRIPT
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    fetch('../Controllers/UserController.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showLoginModal(data.role); // ✅ Pass user role to modal redirect
+        } else {
+          alert(data.message || 'Invalid credentials.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Login error. Please try again.');
+      });
+  });
+
+  // ✅ Redirect based on role
+  function showLoginModal(role) {
+    const modal = document.getElementById('loginModal');
+    modal.classList.remove('hidden');
+
+    setTimeout(() => {
+      if (role === 'admin') {
+        window.location.href = 'manage_books.php';
+      } else {
+        window.location.href = 'dashboard.php';
+      }
+    }, 1500);
+  }
+</script>
 </body>
 </html>

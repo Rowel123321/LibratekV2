@@ -4,7 +4,7 @@ require_once 'DbController.php';
 
 header('Content-Type: application/json');
 
-// 🔴 Handle logout if GET with action=logout
+// 🔴 Handle logout
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'logout') {
     session_unset();
     session_destroy();
@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     exit;
 }
 
-// 🔐 Only accept POST for login/register
+// 🔐 Only accept POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(["status" => "error", "message" => "Invalid request method."]);
     exit;
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// 🟢 Register (name, email, password)
+// 🟢 Register
 if (isset($data['name'], $data['email'], $data['password'])) {
     $name = trim($data['name']);
     $email = strtolower(trim($data['email']));
@@ -34,21 +34,21 @@ if (isset($data['name'], $data['email'], $data['password'])) {
         exit;
     }
 
-    // Save new user
+    // Register new user with default role 'staff'
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'staff')");
     $stmt->execute([$name, $email, $hashedPassword]);
 
     echo json_encode(["status" => "success", "message" => "Account created successfully."]);
     exit;
 }
 
-// 🔐 Login (email, password)
+// 🔐 Login
 if (isset($data['email'], $data['password'])) {
     $email = strtolower(trim($data['email']));
     $password = $data['password'];
 
-    $stmt = $pdo->prepare("SELECT id, name, email, password FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, name, email, password, role FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -56,6 +56,7 @@ if (isset($data['email'], $data['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role']; // ✅ Save user role
 
         echo json_encode(["status" => "success", "message" => "Login successful", "name" => $user['name']]);
     } else {

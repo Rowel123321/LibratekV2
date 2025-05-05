@@ -1,9 +1,16 @@
 <?php
 session_start();
+
 if (!isset($_SESSION['user_id'])) {
   header("Location: login.php");
   exit;
 }
+
+if ($_SESSION['user_role'] !== 'admin') {
+  header("Location: dashboard.php");
+  exit;
+}
+
 $userName = $_SESSION['user_name'] ?? 'Unknown';
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
@@ -17,6 +24,18 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
   <link rel="stylesheet" href="../CSS/styles.css" />
   <style>
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+
     body { font-family: Arial, sans-serif; margin: 20px; }
 
     .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -78,6 +97,19 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </style>
 </head>
 <body>
+
+<!-- 🔒 Logout Confirmation Modal -->
+<div class="modal" id="logoutModal" onclick="clickOutsideLogout(event)">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeLogoutModal()">×</span>
+    <h3>Are you sure you want to logout?</h3>
+    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+      <button onclick="confirmLogout()" style="background: #e74c3c; color: white; padding: 8px 14px;">Yes, Logout</button>
+      <button onclick="closeLogoutModal()" style="background: #ccc; padding: 8px 14px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="sidebar">
   <div class="logo">
     <img id="themeLogo" src="../Images/logo1.png" alt="LibraTek Logo" class="logo-img" />
@@ -90,10 +122,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <i class="fas fa-file-alt"></i><span>Logs</span>
   </a>
   <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
-  <i class="fas fa-folder"></i><span>Manage Books</span>
+    <i class="fas fa-folder"></i><span>Manage Books</span>
   </a>
   <div class="spacer"></div>
-  <a href="#" onclick="logout(event)" class="logout-btn">
+  <a href="#" onclick="directLogout(event)" class="logout-btn">
     <i class="fas fa-sign-out-alt"></i><span>Logout</span>
   </a>
 </div>
@@ -111,67 +143,54 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </div>
 </div>
 
-<div id="logoutModal" class="modal hidden">
-  <div class="modal-content">
-    <i class="fas fa-sign-out-alt modal-icon"></i>
-    <p>Are you sure you want to logout?</p>
-    <div class="modal-actions">
-      <button onclick="confirmLogout()" class="confirm-btn">Yes</button>
-      <button onclick="closeLogoutModal()" class="cancel-btn">No</button>
-    </div>
-  </div>
-</div>
-
-
 <div class="main-content">
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('listTab')">📋 Book List</button>
   <button class="tab-btn" onclick="switchTab('addTab')">➕ Add Book</button>
 </div>
 
-
 <div id="listTab" class="tab-content active">
-      <table id="bookTable">
-        <thead>
-          <tr>
-            <th>Reader ID</th>
-            <th>Book Title</th>
-            <th>Complete Title</th>
-            <th>Author</th>
-            <th>Tag</th>
-            <th>Year</th>
-            <th>Course</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="8">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <table id="bookTable">
+    <thead>
+      <tr>
+        <th>Reader ID</th>
+        <th>Book Title</th>
+        <th>Complete Title</th>
+        <th>Author</th>
+        <th>Tag</th>
+        <th>Year</th>
+        <th>Course</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="8">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
 
-    <div id="addTab" class="tab-content">
-      <form id="addForm">
-        <label>Reader ID: <input name="reader_id" required /></label>
-        <label>Book Title: <input name="book_title" required /></label>
-        <label>Complete Title: <input name="complete_book_title" required /></label>
-        <label>Author: <input name="author" required /></label>
-        <label>Tag: <input name="assigned_tag" required /></label>
-        <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
-        <label>Course:
-          <select name="course" required>
-            <option value="">-- Select Course --</option>
-            <option value="BSIT">BSIT</option>
-            <option value="BSCS">BSCS</option>
-            <option value="BLIS">BLIS</option>
-            <option value="DIT">DIT</option>
-            <option value="MLIS">MLIS</option>
-          </select>
-        </label>
-        <button type="submit">➕ Add Book</button>
-      </form>
-    </div>
-  </div>
+<div id="addTab" class="tab-content">
+  <form id="addForm">
+    <label>Reader ID: <input name="reader_id" required /></label>
+    <label>Book Title: <input name="book_title" required /></label>
+    <label>Complete Title: <input name="complete_book_title" required /></label>
+    <label>Author: <input name="author" required /></label>
+    <label>Tag: <input name="assigned_tag" required /></label>
+    <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
+    <label>Course:
+      <select name="course" required>
+        <option value="">-- Select Course --</option>
+        <option value="BSIT">BSIT</option>
+        <option value="BSCS">BSCS</option>
+        <option value="BLIS">BLIS</option>
+        <option value="DIT">DIT</option>
+        <option value="MLIS">MLIS</option>
+      </select>
+    </label>
+    <button type="submit">➕ Add Book</button>
+  </form>
+</div>
+</div>
 
 <div class="modal" id="editModal" onclick="clickOutsideToClose(event)">
   <div class="modal-content">
@@ -215,23 +234,27 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add("active");
     document.getElementById(tabId).classList.add("active");
   }
-  function logout(event) {
-  event.preventDefault();
-  document.getElementById('logoutModal').classList.remove('hidden'); // Make it visible
-}
-  function closeLogoutModal() {
-    document.getElementById('logoutModal').classList.add('hidden');
-  }
 
-  function confirmLogout() {
-    fetch('../Controllers/UserController.php?action=logout')
-      .then(res => res.json())
-      .then(() => window.location.href = 'login.php')
-      .catch(err => {
-        console.error(err);
-        alert('Logout failed.');
-      });
-  }
+  function directLogout(event) {
+  event.preventDefault();
+  document.getElementById('logoutModal').style.display = 'flex';
+}
+
+function closeLogoutModal() {
+  document.getElementById('logoutModal').style.display = 'none';
+}
+
+function clickOutsideLogout(e) {
+  const modal = document.getElementById('logoutModal');
+  if (e.target === modal) closeLogoutModal();
+}
+
+function confirmLogout() {
+  fetch('../Controllers/UserController.php?action=logout')
+    .then(res => res.json())
+    .then(() => window.location.href = 'login.php')
+    .catch(err => alert('Logout failed: ' + err.message));
+}
 
 
   function loadBooks() {
@@ -290,7 +313,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       return;
     }
     if (existingReaderIds.includes(data.reader_id)) {
-      alert("Reader ID already exists. Use a unique one.");
+      alert("Reader ID already exists.");
       return;
     }
 
@@ -335,7 +358,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
   loadBooks();
 
-  // Dynamically set min/max for year inputs
   const currentYear = new Date().getFullYear();
   const yearMin = currentYear - 30;
   const yearMax = currentYear + 30;
@@ -346,85 +368,64 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   yearAddInput.min = yearMin;
   yearAddInput.max = yearMax;
   yearAddInput.placeholder = `${yearMin} - ${yearMax}`;
-
   yearEditInput.min = yearMin;
   yearEditInput.max = yearMax;
   yearEditInput.placeholder = `${yearMin} - ${yearMax}`;
 
-
   function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     sidebar.classList.toggle('collapsed');
-
     const theme = document.documentElement.getAttribute('data-theme');
-    updateLogo(theme); // ✅ This handles all image switching
+    updateLogo(theme);
   }
-   // Initial theme setup
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
 
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      updateThemeButton(theme);
-      updateLogo(theme);
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeButton(savedTheme);
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    updateThemeButton(theme);
+    updateLogo(theme);
+  }
+
+  function updateThemeButton(theme) {
+    const toggleBtn = document.getElementById('themeToggleDropdown');
+    if (!toggleBtn) return;
+    toggleBtn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+  }
+
+  function updateLogo(theme) {
+    const logo = document.getElementById('themeLogo');
+    const sidebar = document.querySelector('.sidebar');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    let logoName = isCollapsed
+      ? (theme === 'dark' ? 'cbook.png' : 'cbook1.png')
+      : (theme === 'dark' ? 'logo1.png' : 'logo2.png');
+    logo.style.width = isCollapsed ? '40px' : '130px';
+    logo.src = `../Images/${logoName}`;
+  }
+
+  updateLogo(savedTheme);
+
+  const dropdown = document.getElementById('userDropdown');
+  function toggleUserDropdown() {
+    dropdown.classList.toggle('hidden');
+  }
+
+  const themeToggleDropdown = document.getElementById('themeToggleDropdown');
+  themeToggleDropdown.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
+
+  document.addEventListener('click', function (event) {
+    if (!document.querySelector('.user-menu').contains(event.target)) {
+      dropdown.classList.add('hidden');
     }
-      
-    // Update text on dropdown toggle
-    function updateThemeButton(theme) {
-      const toggleBtn = document.getElementById('themeToggleDropdown');
-      if (!toggleBtn) return;
-
-      if (theme === 'dark') {
-        toggleBtn.textContent = '☀️ Light Mode';
-      } else {
-        toggleBtn.textContent = '🌙 Dark Mode';
-      }
-    }
-
-    function updateLogo(theme) {
-      const logo = document.getElementById('themeLogo');
-      const sidebar = document.querySelector('.sidebar');
-      const isCollapsed = sidebar.classList.contains('collapsed');
-
-      let logoName = '';
-
-      if (isCollapsed) {
-        logoName = theme === 'dark' ? 'cbook.png' : 'cbook1.png';
-        logo.style.width = '40px';
-      } else {
-        logoName = theme === 'dark' ? 'logo1.png' : 'logo2.png';
-        logo.style.width = '130px';
-      }
-
-      logo.src = `../Images/${logoName}`;
-    }
-
-    updateLogo(savedTheme);
-
-    // Dropdown toggle
-    const dropdown = document.getElementById('userDropdown');
-    function toggleUserDropdown() {
-      dropdown.classList.toggle('hidden');
-    }
-
-    // Inside dropdown: Theme Toggle
-    const themeToggleDropdown = document.getElementById('themeToggleDropdown');
-    themeToggleDropdown.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-    });
-
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', function (event) {
-      const isClickInside = document.querySelector('.user-menu').contains(event.target);
-      if (!isClickInside) {
-        dropdown.classList.add('hidden');
-      }
-    });
-
+  });
 </script>
 
 </body>

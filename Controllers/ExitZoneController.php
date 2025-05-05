@@ -15,10 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $readerId = trim($data['reader_id']);
 
     // Optional: Look up the book title
-    $stmt = $pdo->prepare("SELECT book_title FROM reader_book_status WHERE assigned_tag = ?");
+    $stmt = $pdo->prepare("SELECT complete_book_title FROM reader_book_status WHERE assigned_tag = ?");
     $stmt->execute([$rfidTag]);
     $book = $stmt->fetch(PDO::FETCH_ASSOC);
-    $bookTitle = $book ? $book['book_title'] : 'Unknown';
+    $bookTitle = $book ? $book['complete_book_title'] : 'Unknown';
+    
 
     try {
         // 1. Log to rfid_exit_logs

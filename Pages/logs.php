@@ -72,10 +72,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </a>
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
-  </a>
+    <?php if ($_SESSION['user_role'] === 'admin'): ?>
   <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
-  <i class="fas fa-folder"></i><span>Manage Books</span>
+    <i class="fas fa-folder"></i><span>Manage Books</span>
   </a>
+<?php endif; ?>
+
   <div class="spacer"></div>
   <a href="#" onclick="logout(event)" class="logout-btn">
     <i class="fas fa-sign-out-alt"></i><span>Logout</span>
@@ -116,7 +118,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       <option value="taken_outside">Taken Outside</option>
       <option value="misplaced">Misplaced</option>
       <option value="unreturned">Unreturned</option>
-      <option value="removed">Removed</option>
+      <option value="removed">Currently In Use</option>
     </select>
   </label>
 
@@ -133,7 +135,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       <th>Book Title</th>
       <th>Reader ID</th>
       <th>Action</th>
-      <th>Timestamp</th>
+      <th>Date/Time</th>
     </tr>
   </thead>
   <tbody id="logsTableBody">
@@ -186,10 +188,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     case 'unreturned': return 'Unreturned';
     case 'unauthorized': return 'Unauthorized';
     case 'reshelved': return 'Reshelved';
-    case 'removed': return 'Removed';
+    case 'removed': return 'Currently In Use';
     default: return action.replace('_', ' ').toUpperCase();
   }
 }
+
 
   function updateTable(logs) {
     const tbody = document.getElementById('logsTableBody');
@@ -215,10 +218,15 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   }
 
   function formatDate(isoString) {
-    const date = new Date(isoString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  }
+  const date = new Date(isoString);
+  const options = {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: true,
+  };
+  return date.toLocaleString('en-US', options);
+}
+
 
   function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');

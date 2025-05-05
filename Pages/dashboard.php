@@ -72,10 +72,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 </div>
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
-  </a>
+    <?php if ($_SESSION['user_role'] === 'admin'): ?>
   <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
-  <i class="fas fa-folder"></i><span>Manage Books</span>
+    <i class="fas fa-folder"></i><span>Manage Books</span>
   </a>
+<?php endif; ?>
+
 
   <div class="spacer"></div>
 

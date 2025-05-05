@@ -461,10 +461,11 @@ body {
   font-weight: bold;
 }
 
-.action-unauthorized {
-  color: #8e44ad;
+.action-removed {
+  color: #abad44;
   font-weight: bold;
 }
+
 .filters {
   display: flex;
   flex-wrap: wrap;
