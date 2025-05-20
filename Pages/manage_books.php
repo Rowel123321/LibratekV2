@@ -24,16 +24,36 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
   <link rel="stylesheet" href="../CSS/styles.css" />
   <style>
+    :root {
+      --bg-main: #ffffff;
+      --bg-modal: #ffffff;
+      --text-main: #000000;
+      --text-muted: #888888;
+      --btn-bg: #007bff;
+      --btn-text: #ffffff;
+      --btn-bg-secondary: #dddddd;
+      --table-header-bg: #f0f0f0;
+    }
 
-.modal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-}
+    [data-theme="dark"] {
+      --bg-main: #1e1e1e;
+      --bg-modal: #2a2a2a;
+      --text-main: #f0f0f0;
+      --text-muted: #bbbbbb;
+      --btn-bg: #3391ff;
+      --btn-text: #ffffff;
+      --btn-bg-secondary: #444444;
+      --table-header-bg: #333333;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
 
 
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -64,12 +84,18 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       margin: 6px 0;
     }
     form { max-width: 600px; margin: auto; }
-    button[type="submit"] {
+   button[type="submit"] {
       margin-top: 10px;
       padding: 8px 12px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
     }
 
-    .edit-btn { color: blue; cursor: pointer; }
+    .edit-btn {
+      color: var(--btn-bg);
+      cursor: pointer;
+    }
 
     .modal {
       display: none;
@@ -81,18 +107,23 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       align-items: center;
     }
     .modal-content {
-      background: #fff;
+      background: var(--bg-modal);
       padding: 20px 30px;
       border-radius: 10px;
       width: 400px;
       position: relative;
+      color: var(--text-main);
     }
     .close-btn {
       position: absolute;
       top: 10px; right: 15px;
       font-size: 20px;
       cursor: pointer;
-      color: #888;
+      color: var(--text-muted);
+    }
+    .modal label{
+      text-align: left;
+      display: block;
     }
   </style>
 </head>
@@ -121,7 +152,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i><span>Logs</span>
   </a>
-  <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
+  <a href="manage_books.php" class="<?= $currentPage === 'manage_books.php' ? 'active' : '' ?>">
     <i class="fas fa-folder"></i><span>Manage Books</span>
   </a>
   <div class="spacer"></div>
@@ -145,8 +176,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <div class="main-content">
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('listTab')">📋 Book List</button>
-  <button class="tab-btn" onclick="switchTab('addTab')">➕ Add Book</button>
+  
+  
+  <button class="tab-btn active" onclick="document.getElementById('addBookModal').style.display='flex'">➕ Add Book </button>
 </div>
 
 <div id="listTab" class="tab-content active">
@@ -169,28 +201,35 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </table>
 </div>
 
-<div id="addTab" class="tab-content">
-  <form id="addForm">
-    <label>Reader ID: <input name="reader_id" required /></label>
-    <label>Book Title: <input name="book_title" required /></label>
-    <label>Complete Title: <input name="complete_book_title" required /></label>
-    <label>Author: <input name="author" required /></label>
-    <label>Tag: <input name="assigned_tag" required /></label>
-    <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
-    <label>Course:
-      <select name="course" required>
-        <option value="">-- Select Course --</option>
-        <option value="BSIT">BSIT</option>
-        <option value="BSCS">BSCS</option>
-        <option value="BLIS">BLIS</option>
-        <option value="DIT">DIT</option>
-        <option value="MLIS">MLIS</option>
-      </select>
-    </label>
-    <button type="submit">➕ Add Book</button>
-  </form>
-</div>
-</div>
+<!-- Trigger button (optional) -->
+
+
+<!-- Modal -->
+<div id="addBookModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="document.getElementById('addBookModal').style.display='none'">&times;</span>
+    <h2 style="margin-top: 0;">Add Book</h2>
+    <form id="addForm">
+      <label>Reader ID: <input name="reader_id" required /></label>
+      <label>Book Title: <input name="book_title" required /></label>
+      <label>Complete Title: <input name="complete_book_title" required /></label>
+      <label>Author: <input name="author" required /></label>
+      <label>Tag: <input name="assigned_tag" required /></label>
+      <label>Year: <input name="year" type="number" id="yearAdd" required /></label>
+      <label>Course:
+        <select name="course" required>
+          <option value="">-- Select Course --</option>
+          <option value="BSIT">BSIT</option>
+          <option value="BSCS">BSCS</option>
+          <option value="BLIS">BLIS</option>
+          <option value="DIT">DIT</option>
+          <option value="MLIS">MLIS</option>
+        </select>
+      </label>
+      <button type="submit">➕ Add Book</button>
+    </form>
+  </div>
+</div>  
 
 <div class="modal" id="editModal" onclick="clickOutsideToClose(event)">
   <div class="modal-content">
@@ -214,7 +253,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
           <option value="MLIS">MLIS</option>
         </select>
       </label>
-      <button type="submit">📎 Save Changes</button>
+      <button type="submit"> Save Changes</button>
     </form>
   </div>
 </div>
@@ -228,12 +267,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   const editModal = document.getElementById("editModal");
   let existingReaderIds = [];
 
-  function switchTab(tabId) {
-    tabButtons.forEach(btn => btn.classList.remove("active"));
-    tabContents.forEach(tab => tab.classList.remove("active"));
-    document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add("active");
-    document.getElementById(tabId).classList.add("active");
-  }
+ 
 
   function directLogout(event) {
   event.preventDefault();
@@ -323,11 +357,11 @@ function confirmLogout() {
       body: JSON.stringify(data)
     })
     .then(res => res.json())
-    .then(res => {
+      .then(res => {
       alert(res.message || 'Book added!');
       addForm.reset();
+      document.getElementById('addBookModal').style.display = 'none'; // ✅ Hide modal
       loadBooks();
-      switchTab('listTab');
     })
     .catch(err => alert("Add error: " + err.message));
   });

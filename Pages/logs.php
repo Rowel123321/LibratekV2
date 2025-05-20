@@ -10,7 +10,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <!-- 📦 Book Taken Outside Modal -->
 <div id="alertModal">
-  <span id="alertText">Book taken outside</span><br/>
+  <div class="alert-icon">⚠️</div>
+  <div id="alertText">Book taken outside</div>
   <button id="closeBtn">Dismiss</button>
 </div>
 <!-- 📦 Book Taken Outside Modal -->
@@ -24,35 +25,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
   <link rel="stylesheet" href="../CSS/styles.css" />
   <style>
-#alertModal {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  font-size: 20px;
-}
 
-#closeBtn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 8px 16px;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-#closeBtn:hover {
-  background: #c0392b;
-}
 
   </style>
   <script>
@@ -71,7 +44,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <i class="fas fa-chart-bar"></i><span>Dashboard</span>
   </a>
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
-    <i class="fas fa-file-alt"></i><span>Logs</span>
+  <i class="fas fa-file-alt"></i>
+  <span>Logs</span>
+  <span id="logBadge" class="log-badge hidden">0</span>
+</a>
     <?php if ($_SESSION['user_role'] === 'admin'): ?>
   <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
     <i class="fas fa-folder"></i><span>Manage Books</span>
@@ -210,7 +186,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <td class="tag">${log.rfid_tag}</td>
         <td>${log.book_title}</td>
         <td>${log.reader_id}</td>
-<td class="action-${log.action_type}">${getActionLabel(log.action_type)}</td>
+        <td class="action-${log.action_type}">${getActionLabel(log.action_type)}</td>
         <td>${formatDate(log.created_at)}</td>
       `;
       tbody.appendChild(row);
@@ -309,7 +285,13 @@ setInterval(() => {
 
         if (timestamp && timestamp !== lastSeenTime) {
           if (lastSeenTime !== null) {
-            showModal(`📦 Book "${bookTitle}" was taken outside`);
+            showModal(`Book "${bookTitle}" was taken outside`);
+
+            // Show/update badge
+            const badge = document.getElementById('logBadge');
+            const currentCount = parseInt(badge.textContent || '0', 10);
+            badge.textContent = currentCount + 1;
+            badge.classList.remove('hidden');
           }
           lastSeenTime = timestamp;
         }
@@ -318,7 +300,11 @@ setInterval(() => {
     .catch(error => console.error('Fetch error:', error));
 }, 1000);
 
-
+document.querySelector('a[href="logs.php"]').addEventListener('click', () => {
+  const badge = document.getElementById('logBadge');
+  badge.textContent = '0';
+  badge.classList.add('hidden');
+});
 
 </script>
 

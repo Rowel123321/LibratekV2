@@ -8,43 +8,68 @@ $userName = $_SESSION['user_name'] ?? 'Unknown'; // Default to 'Unknown' if not 
 
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
-<!-- 📦 Book Taken Outside Modal -->
-<div id="alertModal">
-  <span id="alertText">Book taken outside</span><br/>
+ <div id="alertModal">
+  <div class="alert-icon">⚠️</div>
+  <div id="alertText">Book taken outside</div>
   <button id="closeBtn">Dismiss</button>
 </div>
-<style>
-  #alertModal {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  font-size: 20px;
-}
+    <style>
+       /* Basic Modal Style */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Background overlay */
+  }
 
-#closeBtn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 8px 16px;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
+  .modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+    border-radius: 8px;
+    text-align: center;
+  }
 
-#closeBtn:hover {
-  background: #c0392b;
-}
+  .modal-icon {
+    font-size: 30px;
+    color: red;
+    margin-bottom: 10px;
+  }
 
-</style>
+  .modal-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+
+  .confirm-btn, .cancel-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .confirm-btn {
+    background-color: green;
+    color: white;
+  }
+
+  .cancel-btn {
+    background-color: red;
+    color: white;
+  }
+
+  /* Hidden class for the modal */
+  .hidden {
+    display: none;
+  }
+    </style>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +96,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </a>
 </div>
   <a href="logs.php" class="<?= $currentPage === 'logs.php' ? 'active' : '' ?>">
-    <i class="fas fa-file-alt"></i><span>Logs</span>
+    <i class="fas fa-file-alt"></i>
+    <span>Logs</span>
+    <span id="logBadge" class="log-badge hidden">0</span>
+  </a>
     <?php if ($_SESSION['user_role'] === 'admin'): ?>
   <a href="manage_books.php" class="<?= $currentPage === 'manage_books' ? 'active' : '' ?>">
     <i class="fas fa-folder"></i><span>Manage Books</span>
@@ -112,15 +140,25 @@ $currentPage = basename($_SERVER['PHP_SELF']);
           <option value="BSIT">🖥️ BSIT</option>
           <option value="BSCS">💻 BSCS</option>
           <option value="BLIS">📖 BLIS</option>
-          <option value="MSIT">📖 MSIT</option>
+          <option value="MSIT">📖 MIT</option>
           <option value="DIT">📖 DIT</option>
-          <option value="MLIS">📖 MLIS</option>
         </select>
       </div>
 
       <span class="dot-separator">•</span>
       
-      <button id="clearAllBtn" class="unreturned-btn">Check Unreturned Book</button>
+     <button id="clearAllBtn" class="unreturned-btn" onclick="openUnreturnedModal()">Check Unreturned Book</button>
+     <!-- Modal for Checking Unreturned Books -->
+      <div id="unreturnedModal" class="modal hidden">
+        <div class="modal-content">
+          <i class="fas fa-exclamation-circle modal-icon"></i>
+          <p>Are you sure you want to check all unreturned books?</p>
+          <div class="modal-actions">
+            <button onclick="clearUnreturnedBooks()" class="confirm-btn">Yes</button>
+            <button onclick="closeUnreturnedModal()" class="cancel-btn">No</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="logoutModal" class="modal hidden">
@@ -163,7 +201,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 }
     // 📚 LOAD BOOK SHELVES
     const container = document.getElementById('shelves-by-year');
-    const courseList = ['BSIT', 'BSCS', 'BLIS','MIT' ,'DIT' ,'MLIS'];
+    const courseList = ['BSIT', 'BSCS', 'BLIS','MIT' ,'DIT'];
     const bookMap = new Map();
     const tagToBook = new Map();
 
@@ -222,14 +260,21 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             const readerEl = document.createElement('div');
             readerEl.className = 'reader';
 
-       const modal = document.createElement('div');
+     const modal = document.createElement('div');
 modal.className = 'book-modal';
 modal.innerHTML = `
-  <div><strong>${book.complete_book_title}</strong></div>
-  <div> Author: ${book.author || 'Unknown'}</div>
-  <div> ${book.course}</div>
-  <div> Year ${book.year}</div>
-
+  <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">
+    ${book.complete_book_title || 'Untitled'}
+  </div>
+  <div style="margin-bottom: 0.3rem;">
+    <strong>Author:</strong> ${book.author || 'Unknown'}
+  </div>
+  <div style="margin-bottom: 0.3rem;">
+    <strong>Course:</strong> ${book.course || 'N/A'}
+  </div>
+  <div>
+    <strong>Year:</strong> ${book.year || 'N/A'}
+  </div>
 `;
 
 
@@ -262,11 +307,9 @@ modal.innerHTML = `
         .then(response => response.json())
         .then(data => {
           const now = Date.now();
-
           data.forEach(book => {
             const entry = bookMap.get(book.book_title);
             if (!entry) return;
-
             const { el, status, origin, reader } = entry;
             const assigned = (book.assigned_tag || '').trim();
             const scanned = (book.scanned_tag || '').trim();
@@ -282,35 +325,35 @@ modal.innerHTML = `
             reader.textContent = '';
 
             if (!scanned && !book.last_scanned_at) {
-  el.classList.add('unreturned');
-  status.textContent = '🔴 Unreturned';
-}
- else if (!scanned) {
-              el.classList.add('unscanned');
-              status.textContent = '⚪ Empty';
-            } else if (scanned === assigned) {
-              el.classList.add('matched');
-              status.textContent = '✅ Matched';
+              el.classList.add('unreturned');
+              status.textContent = '🔴 Unreturned';
+            }
+            else if (!scanned) {
+                          el.classList.add('unscanned');
+                          status.textContent = '⚪ Empty';
+                        } else if (scanned === assigned) {
+                          el.classList.add('matched');
+                          status.textContent = '✅ Matched';
+                          reader.textContent = `📡 Reader: ${readerId}`;
+                    } else {
+              el.classList.add('misplaced');
+              status.textContent = '⚠️ Misplaced';
               reader.textContent = `📡 Reader: ${readerId}`;
-        } else {
-  el.classList.add('misplaced');
-  status.textContent = '⚠️ Misplaced';
-  reader.textContent = `📡 Reader: ${readerId}`;
 
-  const correct = tagToBook.get(scanned);
+              const correct = tagToBook.get(scanned);
 
-  if (correct) {
-    origin.textContent = `📍 Tag belongs to: ${correct.book_title} (${correct.course}, Year ${correct.year})`;
+              if (correct) {
+                origin.textContent = `📍 Tag belongs to: ${correct.book_title} (${correct.course}, Year ${correct.year})`;
 
-    // Update modal
-    const modal = el.querySelector('.book-modal');
-    modal.innerHTML = `
-  <div><strong>${correct.complete_book_title}</strong></div>
-  <div> Author: ${correct.author || 'Unknown'}</div>
-  <div style="margin-top: 6px; font-style: italic; color: #aaa;">
-     This book belongs to ${correct.course}, Year ${correct.year}
-  </div>
-`;
+                // Update modal
+                const modal = el.querySelector('.book-modal');
+                modal.innerHTML = `
+              <div><strong>${correct.complete_book_title}</strong></div>
+              <div> Author: ${correct.author || 'Unknown'}</div>
+              <div style="margin-top: 6px; font-style: italic; color: #aaa;">
+                This book belongs to ${correct.course}, Year ${correct.year}
+              </div>
+            `;
 
 
     // ✅ Also update the visible title
@@ -421,23 +464,7 @@ modal.innerHTML = `
     }
     
 
-    document.getElementById('clearAllBtn').addEventListener('click', () => {
-  if (!confirm('Are you sure you want to clear last scanned time for all unscanned books?')) return;
 
-  fetch('../Controllers/ClearScannedAtController.php', {
-    method: 'POST'
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert('Unreturned Book Highligh Color Red');
-      location.reload(); // or re-fetch your book data manually
-    } else {
-      alert('Failed: ' + data.error);
-    }
-  })
-  .catch(() => alert('Request failed.'));
-});
 
 
 let lastSeenTime = null;
@@ -466,17 +493,84 @@ setInterval(() => {
         const bookTitle = latest.book_title;
 
         if (timestamp && timestamp !== lastSeenTime) {
-          if (lastSeenTime !== null) {
-            showModal(`📦 Book "${bookTitle}" was taken outside`);
-          }
-          lastSeenTime = timestamp;
-        }
+  if (lastSeenTime !== null) {
+    showModal(`Book "${bookTitle}" was taken outside`);
+
+    // Show/update badge
+    const badge = document.getElementById('logBadge');
+    const currentCount = parseInt(badge.textContent || '0', 10);
+    badge.textContent = currentCount + 1;
+    badge.classList.remove('hidden');
+  }
+  lastSeenTime = timestamp;
+}
       }
     })
     .catch(error => console.error('Fetch error:', error));
 }, 1000);
 
 
+document.querySelector('a[href="logs.php"]').addEventListener('click', () => {
+  const badge = document.getElementById('logBadge');
+  badge.textContent = '0';
+  badge.classList.add('hidden');
+});
+
+ function openUnreturnedModal() {
+    document.getElementById('unreturnedModal').classList.remove('hidden');
+  }
+
+  // Function to close the modal
+  function closeUnreturnedModal() {
+    document.getElementById('unreturnedModal').classList.add('hidden');
+  }
+    // Function to confirm and clear unreturned book status
+  function clearUnreturnedBooks() {
+  fetch('../Controllers/ClearScannedAtController.php', {
+    method: 'POST'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showConfirmationModal('Unreturned books have been highlighted in red.', () => {
+        location.reload(); // Reload after user acknowledges
+      });
+    } else {
+      alert('Failed: ' + data.error);
+    }
+  })
+  .catch(() => alert('Request failed.'));
+
+  closeUnreturnedModal(); // Close any existing modal
+}
+function showConfirmationModal(message, onConfirm) {
+  const modal = document.createElement('div');
+  modal.className = 'confirmation-modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-icon animate-spin-stop">
+        <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <p>${message}</p>
+      <button id="confirm-ok" class="pulse-button">OK</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Remove spinning after 1s to simulate "stop" on check
+  setTimeout(() => {
+    modal.querySelector('.modal-icon').classList.remove('animate-spin-stop');
+  }, 1000);
+
+  document.getElementById('confirm-ok').addEventListener('click', () => {
+    modal.remove();
+    if (onConfirm) onConfirm();
+  });
+}
   </script>
 </body>
 </html>

@@ -3,44 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Exit Monitor</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-      background: #f0f0f0;
-    }
-
-    #alertModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
-      font-size: 20px;
-    }
-
-    #closeBtn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 8px 16px;
-      background: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    #closeBtn:hover {
-      background: #c0392b;
-    }
-  </style>
+  <link rel="stylesheet" href="../CSS/styles.css" />
+ 
 </head>
 <body>
   <h1>📡 RFID Exit Monitoring</h1>
@@ -76,7 +40,7 @@
 
             if (timestamp && timestamp !== lastSeenTime) {
               if (lastSeenTime !== null) {
-                showModal(`📦 Book "${bookTitle}" was taken outside`);
+                showModal(`⚠️ Book "${bookTitle}" was taken outside`);
               }
               lastSeenTime = timestamp;
             }
