@@ -351,7 +351,8 @@ modal.innerHTML = `
               <div><strong>${correct.complete_book_title}</strong></div>
               <div> Author: ${correct.author || 'Unknown'}</div>
               <div style="margin-top: 6px; font-style: italic; color: #aaa;">
-                This book belongs to ${correct.course}, Year ${correct.year}
+                This book belongs to ${correct.course}, Year ${correct.year}, Reader ${correct.reader_id}
+              </div>
               </div>
             `;
 
@@ -571,6 +572,8 @@ function showConfirmationModal(message, onConfirm) {
     if (onConfirm) onConfirm();
   });
 }
+
+
   </script>
 </body>
 </html>

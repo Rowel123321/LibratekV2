@@ -277,11 +277,6 @@ if (isset($_SESSION['user_id'])) {
             <input type="password" id="password" name="password" placeholder="Password" required>
           </div>
 
-          <div class="form-group remember">
-            <label><input type="checkbox" name="remember"> Remember me</label>
-            <a href="#">Forgot password?</a>
-          </div>
-
           <button type="submit">Log in</button>
 
           <div class="signup">
