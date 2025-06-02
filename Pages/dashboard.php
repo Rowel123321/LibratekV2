@@ -75,7 +75,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Capstone Projects Shelf - Dashboard</title>  
+  <title>Dashboard</title>  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/styles.css" />
@@ -176,6 +176,25 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </div>
     <div id="shelves-by-year"></div>
   </div>
+  <div class="legend-section">
+  <h3>Legend</h3>
+  <div class="legend-items">
+    <div class="legend-item matched">
+      <span class="legend-color"></span>Matched
+    </div>
+    <div class="legend-item misplaced">
+      <span class="legend-color"></span>Misplaced
+    </div>
+    <div class="legend-item unreturned">
+      <span class="legend-color"></span>Unreturned
+    </div>
+    <div class="legend-item unscanned">
+      <span class="legend-color"></span>Unscanned/In use
+    </div>
+   
+  </div>
+</div>
+
 
   <script>
     // 🧠 LOGOUT FUNCTION

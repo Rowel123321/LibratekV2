@@ -4,10 +4,26 @@ header('Content-Type: application/json');
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $stmt = $pdo->query("SELECT * FROM reader_book_status ORDER BY id ASC");
-        $books = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($books);
-        exit;
+    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+    $offset = ($page - 1) * $limit;
+
+    // Fetch paginated records
+    $stmt = $pdo->prepare("SELECT * FROM reader_book_status ORDER BY id ASC LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $books = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get total count for pagination
+    $countStmt = $pdo->query("SELECT COUNT(*) as total FROM reader_book_status");
+    $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+    echo json_encode([
+        "books" => $books,
+        "total" => (int)$total
+    ]);
+    exit;
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

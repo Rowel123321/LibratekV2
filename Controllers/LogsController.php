@@ -42,12 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Handle fetching logs with optional filters
     try {
         $actionType = $_GET['action_type'] ?? null;
         $date = $_GET['date'] ?? null;
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+        $offset = ($page - 1) * $limit;
 
         $sql = "SELECT * FROM rfid_logs";
+        $countSql = "SELECT COUNT(*) FROM rfid_logs";
         $where = [];
         $params = [];
 
@@ -68,19 +71,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(" AND ", $where);
+            $countSql .= " WHERE " . implode(" AND ", $where);
         }
 
-        $sql .= " ORDER BY created_at DESC";
+        $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        echo json_encode($logs);
+        // Get total count
+        $countStmt = $pdo->prepare($countSql);
+        foreach ($params as $key => $val) {
+            $countStmt->bindValue($key, $val);
+        }
+        $countStmt->execute();
+        $totalRows = $countStmt->fetchColumn();
+
+        echo json_encode([
+            "logs" => $logs,
+            "total" => $totalRows,
+            "page" => $page,
+            "limit" => $limit
+        ]);
     } catch (PDOException $e) {
         echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
-
 } else {
     // Reject other HTTP methods
     echo json_encode(["status" => "error", "message" => "Invalid request method"]);

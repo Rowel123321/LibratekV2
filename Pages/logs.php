@@ -20,13 +20,52 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RFID Scan Logs</title>
+  <title>Logs</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
   <link rel="stylesheet" href="../CSS/styles.css" />
   <style>
+  .pagination-controls {
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    gap: 4px;
+    margin: 20px 20px 20px 0;
+    flex-wrap: wrap;
+    font-family: sans-serif;
+  }
 
+  .pagination-controls button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #007bff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
 
+  .pagination-controls button:hover:not(:disabled) {
+    background-color: #f0f0f0;
+  }
+
+  .pagination-controls button.active-page {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+  }
+
+  .pagination-controls button:disabled {
+    color: #aaa;
+    background-color: #f9f9f9;
+    cursor: default;
+  }
+
+  .pagination-controls .ellipsis {
+    padding: 0 6px;
+    color: #666;
+    font-weight: bold;
+  }
   </style>
   <script>
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -119,7 +158,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </tbody>
 </table>
 
+<div id="pagination" class="pagination-controls"></div>
+
 <script>
+  let currentPage = 1;
+  let totalPages = 1;
+  const limitPerPage = 10;
+
   function logout(event) {
     event.preventDefault();
     document.getElementById('logoutModal').classList.remove('hidden');
@@ -139,23 +184,29 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       });
   }
 
-  function applyFilters() {
-    const action = document.getElementById('actionFilter').value;
-    const date = document.getElementById('dateFilter').value;
+  function applyFilters(page = 1) {
+  currentPage = page;
+  const action = document.getElementById('actionFilter').value;
+  const date = document.getElementById('dateFilter').value;
 
-    const params = new URLSearchParams();
-    if (action) params.append('action_type', action);
-    if (date) params.append('date', date);
+  const params = new URLSearchParams();
+  if (action) params.append('action_type', action);
+  if (date) params.append('date', date);
+  params.append('page', currentPage);
+  params.append('limit', limitPerPage);
 
-    fetch(`../Controllers/LogsController.php?${params.toString()}`)
-      .then(res => res.json())
-      .then(updateTable)
-      .catch(error => {
-        console.error("Error loading logs:", error);
-        document.getElementById('logsTableBody').innerHTML =
-          `<tr><td colspan="6">Error loading logs.</td></tr>`;
-      });
-  }
+  fetch(`../Controllers/LogsController.php?${params.toString()}`)
+    .then(res => res.json())
+    .then(data => {
+      updateTable(data.logs);
+      updatePagination(data.total);
+    })
+    .catch(error => {
+      console.error("Error loading logs:", error);
+      document.getElementById('logsTableBody').innerHTML =
+        `<tr><td colspan="6">Error loading logs.</td></tr>`;
+    });
+}
   function getActionLabel(action) {
   switch (action) {
     case 'normal': return 'Reshelved';
@@ -305,6 +356,60 @@ document.querySelector('a[href="logs.php"]').addEventListener('click', () => {
   badge.textContent = '0';
   badge.classList.add('hidden');
 });
+
+function updatePagination(totalItems) {
+  const paginationContainer = document.getElementById('pagination');
+  paginationContainer.innerHTML = '';
+
+  totalPages = Math.ceil(totalItems / limitPerPage);
+
+  const maxVisiblePages = 3; // Only 3 pages visible at once (excluding first/last buttons)
+  let startPage = Math.max(1, currentPage - 1);
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  // Adjust if near the end
+  if (endPage >= totalPages - 1) {
+    endPage = totalPages - 1;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  const createBtn = (text, page, isActive = false, disabled = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.disabled = disabled;
+    btn.className = isActive ? 'active-page' : '';
+    btn.addEventListener('click', () => {
+      if (!disabled) applyFilters(page);
+    });
+    return btn;
+  };
+
+  // First and Prev buttons
+  paginationContainer.appendChild(createBtn('«', 1, false, currentPage === 1));
+  paginationContainer.appendChild(createBtn('‹', currentPage - 1, false, currentPage === 1));
+
+  // Page numbers range
+  for (let i = startPage; i <= endPage; i++) {
+    paginationContainer.appendChild(createBtn(i, i, i === currentPage));
+  }
+
+  // Ellipsis and last page
+  if (endPage < totalPages - 1) {
+    const ellipsis = document.createElement('span');
+    ellipsis.textContent = '...';
+    ellipsis.className = 'ellipsis';
+    paginationContainer.appendChild(ellipsis);
+  }
+
+  if (totalPages > 1) {
+    paginationContainer.appendChild(createBtn(totalPages, totalPages, currentPage === totalPages));
+  }
+
+  // Next and Last buttons
+  paginationContainer.appendChild(createBtn('›', currentPage + 1, false, currentPage === totalPages));
+  paginationContainer.appendChild(createBtn('»', totalPages, false, currentPage === totalPages));
+}
+
 
 </script>
 

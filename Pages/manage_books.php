@@ -125,6 +125,48 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       text-align: left;
       display: block;
     }
+    .pagination-controls {
+      display: flex;
+      justify-content: right;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      font-family: sans-serif;
+    }
+
+    .pagination-controls button {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      background: white;
+      color: #007bff;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    .pagination-controls button:hover:not(:disabled) {
+      background-color: #f0f0f0;
+    }
+
+    .pagination-controls button.active,
+    .pagination-controls button.active-page {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      font-weight: bold;
+    }
+
+    .pagination-controls button:disabled {
+      color: #aaa;
+      background-color: #f9f9f9;
+      cursor: default;
+    }
+
+    .pagination-controls .ellipsis {
+      padding: 0 6px;
+      color: #666;
+      font-weight: bold;
+    }
+
   </style>
 </head>
 <body>
@@ -258,6 +300,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   </div>
 </div>
 
+<div id="pagination" class="pagination-controls"></div>
+
 <script>
   const tableBody = document.querySelector("#bookTable tbody");
   const tabButtons = document.querySelectorAll(".tab-btn");
@@ -266,6 +310,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   const editForm = document.getElementById("editForm");
   const editModal = document.getElementById("editModal");
   let existingReaderIds = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  const limitPerPage = 10;
 
  
 
@@ -292,34 +339,47 @@ function confirmLogout() {
 
 
   function loadBooks() {
-    fetch('../Controllers/BookController.php')
-      .then(res => res.json())
-      .then(data => {
-        existingReaderIds = data.map(book => book.reader_id.toString());
-        tableBody.innerHTML = "";
-        if (!Array.isArray(data)) {
-          tableBody.innerHTML = `<tr><td colspan="8">❌ Error: ${data.message || 'Invalid response'}</td></tr>`;
-          return;
-        }
-        data.forEach(book => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${book.reader_id}</td>
-            <td>${book.book_title}</td>
-            <td>${book.complete_book_title}</td>
-            <td>${book.author}</td>
-            <td>${book.assigned_tag}</td>
-            <td>${book.year}</td>
-            <td>${book.course}</td>
-            <td><span class="edit-btn" onclick='editBook(${JSON.stringify(book)})'>✏️ Edit</span></td>
-          `;
-          tableBody.appendChild(row);
-        });
-      })
-      .catch(err => {
-        tableBody.innerHTML = `<tr><td colspan="8">❌ Fetch error: ${err.message}</td></tr>`;
+  fetch(`../Controllers/BookController.php?page=${currentPage}&limit=${limitPerPage}`)
+    .then(res => res.json())
+    .then(response => {
+      let data = response.books || response; // handle both array and object format
+      const totalItems = response.total || data.length;
+
+      existingReaderIds = data.map(book => book.reader_id.toString());
+      tableBody.innerHTML = "";
+
+      if (!Array.isArray(data)) {
+        tableBody.innerHTML = `<tr><td colspan="8">❌ Error: ${response.message || 'Invalid response'}</td></tr>`;
+        return;
+      }
+
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8">📭 No books found.</td></tr>`;
+        return;
+      }
+
+      data.forEach(book => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${book.reader_id}</td>
+          <td>${book.book_title}</td>
+          <td>${book.complete_book_title}</td>
+          <td>${book.author}</td>
+          <td>${book.assigned_tag}</td>
+          <td>${book.year}</td>
+          <td>${book.course}</td>
+          <td><span class="edit-btn" onclick='editBook(${JSON.stringify(book)})'>✏️ Edit</span></td>
+        `;
+        tableBody.appendChild(row);
       });
+
+      updatePagination(totalItems);
+    })
+    .catch(err => {
+      tableBody.innerHTML = `<tr><td colspan="8">❌ Fetch error: ${err.message}</td></tr>`;
+    });
   }
+
 
   function editBook(book) {
     for (const key in book) {
@@ -460,6 +520,67 @@ function confirmLogout() {
       dropdown.classList.add('hidden');
     }
   });
+
+ function updatePagination(totalItems) {
+  const paginationContainer = document.getElementById('pagination');
+  paginationContainer.innerHTML = '';
+
+  const totalPages = Math.ceil(totalItems / limitPerPage);
+  const maxVisiblePages = 3;
+
+  let startPage = Math.max(1, currentPage - 1);
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  // Adjust if near the end
+  if (endPage >= totalPages - 1) {
+    endPage = totalPages - 1;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  const createBtn = (text, page, disabled = false, isActive = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.classList.add('pagination-btn');
+    if (isActive) btn.classList.add('active');
+    btn.disabled = disabled;
+    btn.addEventListener('click', () => {
+      if (!disabled) {
+        currentPage = page;
+        loadBooks();
+      }
+    });
+    return btn;
+  };
+
+  // First and Prev buttons
+  paginationContainer.appendChild(createBtn('«', 1, currentPage === 1));
+  paginationContainer.appendChild(createBtn('‹', currentPage - 1, currentPage === 1));
+
+  // Page buttons (sliding window)
+  for (let i = startPage; i <= endPage; i++) {
+    paginationContainer.appendChild(createBtn(i, i, false, i === currentPage));
+  }
+
+  // Ellipsis if needed
+  if (endPage < totalPages - 1) {
+    const ellipsis = document.createElement('span');
+    ellipsis.textContent = '...';
+    ellipsis.className = 'ellipsis';
+    paginationContainer.appendChild(ellipsis);
+  }
+
+  // Last page button (if more than one page)
+  if (totalPages > 1) {
+    paginationContainer.appendChild(createBtn(totalPages, totalPages, false, currentPage === totalPages));
+  }
+
+  // Next and Last buttons
+  paginationContainer.appendChild(createBtn('›', currentPage + 1, currentPage === totalPages));
+  paginationContainer.appendChild(createBtn('»', totalPages, currentPage === totalPages));
+}
+
+
+
 </script>
 
 </body>
